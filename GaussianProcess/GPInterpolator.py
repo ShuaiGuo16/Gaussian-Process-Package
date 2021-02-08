@@ -11,6 +11,7 @@ class GPInterpolator(GaussianProcess):
     to interpolate functions"""
 
     def __init__(self):
+        pass
 
     def Neglikelihood(self, theta):
         """Negative log-likelihood function
@@ -48,3 +49,40 @@ class GPInterpolator(GaussianProcess):
         self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
 
         return -LnLike.flatten()
+
+    def fit(self, X, y):
+        """GP model training
+
+        Input
+        -----
+        X (array): shape (n_samples, n_features)
+        y (array): shape (n_samples, 1)
+        """
+
+        self.X, self.y = X, y
+        lb, ub = -3, 2
+
+        # Generate random starting points (Latin Hypercube)
+        lhd = lhs(self.X.shape[1], samples=self.n_restarts)
+
+        # Scale random samples to the given bounds
+        initial_points = (ub-lb)*lhd + lb
+        initial_points = np.vstack((initial_points, self.init_point))
+
+        # Create A Bounds instance for optimization
+        bnds = Bounds(lb*np.ones(X.shape[1]),ub*np.ones(X.shape[1]))
+
+        # Run local optimizer on all points
+        opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
+        opt_func = np.zeros((self.n_restarts, 1))
+        for i in range(self.n_restarts):
+            res = minimize(self.Neglikelihood, initial_points[i,:], method=self.optimizer,
+                bounds=bnds)
+            opt_para[i,:] = res.x
+            opt_func[i,:] = res.fun
+
+        # Locate the optimum results
+        self.theta = opt_para[np.argmin(opt_func)]
+
+        # Update attributes
+        self.NegLnlike = self.Neglikelihood(self.theta)
