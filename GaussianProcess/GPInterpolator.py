@@ -86,3 +86,34 @@ class GPInterpolator(GaussianProcess):
 
         # Update attributes
         self.NegLnlike = self.Neglikelihood(self.theta)
+
+    def predict(self, X_test, cov_return=False):
+        """GP model predicting
+
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+        cov_return (bool): return/not return covariance matrix
+
+        Output
+        ------
+        f: GP predictions
+        SSqr: Prediction variances"""
+
+        # Construct correlation matrix between test and train data
+        k = self.Corr(self.X, X_test, 10**self.theta)
+
+        # Mean prediction
+        f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.mu*F))
+
+        # Variance prediction
+        SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
+
+        # Calculate covariance
+        if cov_return == 'True':
+            Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)
+             - k.T @ (cho_solve((self.L, True), k)))
+        else:
+            Cov = None
+
+        return f.flatten(), SSqr.flatten(), Cov
