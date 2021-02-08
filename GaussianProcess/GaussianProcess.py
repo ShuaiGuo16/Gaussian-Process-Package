@@ -1,4 +1,4 @@
-# import all packages and set plots to be embedded inline
+# import all packages 
 import numpy as np
 
 class GaussianProcess:
