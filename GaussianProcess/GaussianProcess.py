@@ -6,7 +6,7 @@ class GaussianProcess:
     to approximate functions"""
 
     def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
-    inital_point=None, kernel='Gaussian', nugget=1e-10):
+    inital_point=None, kernel='Gaussian', trend='Const', nugget=1e-10):
         """Initialize a Gaussian Process model
 
         Input
@@ -22,6 +22,7 @@ class GaussianProcess:
         self.optimizer = optimizer
         self.init_point = inital_point
         self.kernel = kernel
+        self.trend = trend
         self.nugget = nugget
 
     def Corr(self, X1, X2, theta):
