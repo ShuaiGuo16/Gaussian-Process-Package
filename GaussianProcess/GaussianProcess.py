@@ -16,7 +16,7 @@ class GaussianProcess:
                    (see scipy.optimize.minimize methods)
         inital_point (array): user-specified starting point
         kernel (string): kernel type
-        nugget (float):nugget term"""
+        nugget (float): nugget term"""
 
         self.n_restarts = n_restarts
         self.optimizer = optimizer
