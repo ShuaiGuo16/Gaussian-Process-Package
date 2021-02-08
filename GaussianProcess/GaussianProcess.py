@@ -20,3 +20,26 @@ class GaussianProcess:
         self.optimizer = optimizer
         self.init_point = inital_point
         self.kernel = kernel
+
+    def Corr(self, X1, X2, theta):
+        """Construct the correlation matrix between X1 and X2
+        based on specified kernel function
+
+        Input
+        -----
+        X1, X2 (2D array): shape (n_samples, n_features)
+        theta (array): correlation legnths for different dimensions
+
+        Output
+        ------
+        K: the correlation matrix
+        """
+
+        # Initialize correlation matrix
+        K = np.zeros((X1.shape[0], X2.shape[0]))
+
+        # Compute entries of the correlation matrix
+        if self.kernel == 'Gaussian':
+            # Gaussian kernel
+            for i in range(X1.shape[0]):
+                K[i,:] = np.exp(-np.sum(theta*(X1[i,:]-X2)**2, axis=1))
