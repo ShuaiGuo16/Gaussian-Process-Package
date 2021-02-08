@@ -5,7 +5,8 @@ class GaussianProcess:
     """A class that trains a Gaussian Process model
     to approximate functions"""
 
-    def __init__(self, n_restarts=10, optimizer='L-BFGS-B', inital_point=None, kernel='Gaussian'):
+    def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
+    inital_point=None, kernel='Gaussian', nugget=1e-10):
         """Initialize a Gaussian Process model
 
         Input
@@ -14,12 +15,14 @@ class GaussianProcess:
         optimizer (string): algorithm of local optimization
                    (see scipy.optimize.minimize methods)
         inital_point (array): user-specified starting point
-        kernel (string): kernel type"""
+        kernel (string): kernel type
+        nugget (float):nugget term"""
 
         self.n_restarts = n_restarts
         self.optimizer = optimizer
         self.init_point = inital_point
         self.kernel = kernel
+        self.nugget = nugget
 
     def Corr(self, X1, X2, theta):
         """Construct the correlation matrix between X1 and X2
