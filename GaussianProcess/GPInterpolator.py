@@ -119,18 +119,18 @@ class GPInterpolator(GaussianProcess):
         return f.flatten(), SSqr.flatten(), Cov
 
     def score(self, X_test, y_test):
-    """Calculate root mean squared error
+        """Calculate root mean squared error
 
-    Input
-    -----
-    X_test (array): test set, shape (n_samples, n_features)
-    y_test (array): test labels, shape (n_samples, )
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+        y_test (array): test labels, shape (n_samples, )
 
-    Output
-    ------
-    RMSE: the root mean square error"""
+        Output
+        ------
+        RMSE: the root mean square error"""
 
-    y_pred, SSqr = self.predict(X_test)
-    RMSE = np.sqrt(np.mean((y_pred-y_test)**2))
+        y_pred, SSqr = self.predict(X_test)
+        RMSE = np.sqrt(np.mean((y_pred-y_test)**2))
 
-    return RMSE
+        return RMSE
