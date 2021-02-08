@@ -43,3 +43,5 @@ class GaussianProcess:
             # Gaussian kernel
             for i in range(X1.shape[0]):
                 K[i,:] = np.exp(-np.sum(theta*(X1[i,:]-X2)**2, axis=1))
+
+            return K
