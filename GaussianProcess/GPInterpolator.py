@@ -94,7 +94,8 @@ class GPInterpolator(GaussianProcess):
 
             # Display optimization progress in real-time
             if self.verbose == True:
-                print('Current_bset: {} \n'.format(opt_func[i]))
+                print('Iteration {}: Likelihood={} \n'
+                .format(str(i+1), opt_func[i]))
 
         # Locate the optimum results
         self.theta = opt_para[np.argmin(opt_func)]
