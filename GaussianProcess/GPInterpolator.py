@@ -10,8 +10,11 @@ class GPInterpolator(GaussianProcess):
     """A class that trains a Gaussian Process model
     to interpolate functions"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
+    inital_point=None, kernel='Gaussian', trend='Const', nugget=1e-10):
+
+        super().__init__(n_restarts, optimizer,inital_point,
+        kernel, trend, nugget)
 
     def Neglikelihood(self, theta):
         """Negative log-likelihood function

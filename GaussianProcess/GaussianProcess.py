@@ -5,8 +5,8 @@ class GaussianProcess:
     """A class that trains a Gaussian Process model
     to approximate functions"""
 
-    def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
-    inital_point=None, kernel='Gaussian', trend='Const', nugget=1e-10):
+    def __init__(self, n_restarts, optimizer,inital_point,
+    kernel, trend, nugget):
         """Initialize a Gaussian Process model
 
         Input
