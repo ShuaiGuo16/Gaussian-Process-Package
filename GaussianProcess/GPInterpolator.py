@@ -77,7 +77,7 @@ class GPInterpolator(GaussianProcess):
 
         # Expand initial points if user specified them
         if self.init_point is not None:
-            initial_points = np.vstack((initial_points, np.log10(self.init_point)))
+            initial_points = np.vstack((initial_points, 10**(self.init_point)))
 
         # Create A Bounds instance for optimization
         bnds = Bounds(lb*np.ones(X.shape[1]),ub*np.ones(X.shape[1]))
