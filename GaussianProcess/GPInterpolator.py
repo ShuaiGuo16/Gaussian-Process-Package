@@ -13,7 +13,7 @@ class GPInterpolator(GaussianProcess):
     def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
     inital_point=None, kernel='Gaussian', trend='Const', nugget=1e-10):
 
-        super().__init__(n_restarts, optimizer,inital_point,
+        super().__init__(n_restarts, optimizer, inital_point,
         kernel, trend, nugget)
 
     def Neglikelihood(self, theta):
@@ -70,7 +70,10 @@ class GPInterpolator(GaussianProcess):
 
         # Scale random samples to the given bounds
         initial_points = (ub-lb)*lhd + lb
-        initial_points = np.vstack((initial_points, self.init_point))
+
+        # Expand initial points if user specified them
+        if self.init_point is not None:
+            initial_points = np.vstack((initial_points, self.init_point))
 
         # Create A Bounds instance for optimization
         bnds = Bounds(lb*np.ones(X.shape[1]),ub*np.ones(X.shape[1]))

@@ -14,7 +14,7 @@ class GaussianProcess:
         n_restarts (int): number of restarts of the local optimizer
         optimizer (string): algorithm of local optimization
                    (see scipy.optimize.minimize methods)
-        inital_point (array): user-specified starting point
+        inital_point (array): user-specified starting points
         kernel (string): kernel type
         nugget (float): nugget term"""
 
