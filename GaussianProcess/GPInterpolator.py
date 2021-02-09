@@ -114,10 +114,14 @@ class GPInterpolator(GaussianProcess):
         if cov_return == 'True':
             Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)
              - k.T @ (cho_solve((self.L, True), k)))
-        else:
-            Cov = None
 
-        return f.flatten(), SSqr.flatten(), Cov
+             # Return values
+             return f.flatten(), SSqr.flatten(), Cov
+
+        else:
+            # Return values
+            return f.flatten(), SSqr.flatten()
+
 
     def score(self, X_test, y_test):
         """Calculate root mean squared error
