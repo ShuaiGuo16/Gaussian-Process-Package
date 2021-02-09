@@ -11,7 +11,7 @@ class GPInterpolator(GaussianProcess):
     to interpolate functions"""
 
     def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
-    inital_point=None, verbose='False',
+    inital_point=None, verbose=False,
     kernel='Gaussian', trend='Const', nugget=1e-10):
 
         # Display optimization log
