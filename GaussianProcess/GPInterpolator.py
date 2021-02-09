@@ -105,7 +105,7 @@ class GPInterpolator(GaussianProcess):
         k = self.Corr(self.X, X_test, 10**self.theta)
 
         # Mean prediction
-        f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.mu*F))
+        f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.mu*self.F))
 
         # Variance prediction
         SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
