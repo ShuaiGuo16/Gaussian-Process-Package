@@ -11,7 +11,11 @@ class GPInterpolator(GaussianProcess):
     to interpolate functions"""
 
     def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
-    inital_point=None, kernel='Gaussian', trend='Const', nugget=1e-10):
+    inital_point=None, verbose='False',
+    kernel='Gaussian', trend='Const', nugget=1e-10):
+
+        # Display optimization log
+        self.verbose = verbose
 
         super().__init__(n_restarts, optimizer, inital_point,
         kernel, trend, nugget)
@@ -73,20 +77,24 @@ class GPInterpolator(GaussianProcess):
 
         # Expand initial points if user specified them
         if self.init_point is not None:
-            initial_points = np.vstack((initial_points, self.init_point))
+            initial_points = np.vstack((initial_points, np.log10(self.init_point)))
 
         # Create A Bounds instance for optimization
         bnds = Bounds(lb*np.ones(X.shape[1]),ub*np.ones(X.shape[1]))
 
         # Run local optimizer on all points
         opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
-        opt_func = np.zeros((self.n_restarts, 1))
+        opt_func = np.zeros(self.n_restarts)
         for i in range(self.n_restarts):
             res = minimize(self.Neglikelihood, initial_points[i,:],
             method=self.optimizer, bounds=bnds)
 
             opt_para[i,:] = res.x
-            opt_func[i,:] = res.fun
+            opt_func[i] = res.fun
+
+            # Display optimization progress in real-time
+            if self.verbose == True:
+                print('Current_bset: {} \n'.format(opt_func[i]))
 
         # Locate the optimum results
         self.theta = opt_para[np.argmin(opt_func)]
