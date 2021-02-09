@@ -11,7 +11,7 @@ class GPInterpolator(GaussianProcess):
     to interpolate functions"""
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def Neglikelihood(self, theta):
         """Negative log-likelihood function
@@ -76,8 +76,9 @@ class GPInterpolator(GaussianProcess):
         opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
         opt_func = np.zeros((self.n_restarts, 1))
         for i in range(self.n_restarts):
-            res = minimize(self.Neglikelihood, initial_points[i,:], method=self.optimizer,
-                bounds=bnds)
+            res = minimize(self.Neglikelihood, initial_points[i,:],
+            method=self.optimizer, bounds=bnds)
+
             opt_para[i,:] = res.x
             opt_func[i,:] = res.fun
 
