@@ -120,12 +120,13 @@ class GPInterpolator(GaussianProcess):
         # Update attributes
         self.NegLnlike = self.Neglikelihood(self.theta)
 
-    def predict(self, X_test, cov_return=False):
+    def predict(self, X_test, trend=None, cov_return=False):
         """GP model predicting
 
         Input
         -----
         X_test (array): test set, shape (n_samples, n_features)
+        trend: trend values at test sites
         cov_return (bool): return/not return covariance matrix
 
         Output
@@ -137,7 +138,26 @@ class GPInterpolator(GaussianProcess):
         k = self.Corr(self.X, X_test, 10**self.theta)
 
         # Mean prediction
-        f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.mu*self.F))
+        n = X_test.shape[0]  # Number of training instances
+        dim = X_test.shape[1]  # Problem dimension
+
+        if self.trend == 'Const':
+            f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+        elif self.trend == 'Linear':
+            obs = np.hstack((np.ones((n,1)), X_test))
+            f = obs.T@self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+        elif self.trend == 'Quadratic':
+            obs = np.ones((n,1))
+            obs = np.hstack((obs, X_test))
+            for i in range(dim):
+                    obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
+            f = obs.T@self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+            
+        else:
+            f = trend.T@self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
 
         # Variance prediction
         SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
