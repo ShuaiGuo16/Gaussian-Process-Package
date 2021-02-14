@@ -57,7 +57,7 @@ class GPInterpolator(GaussianProcess):
         L = np.linalg.cholesky(K)
 
         # Mean estimation
-        mu = linalg.lstsq(F.T @ (cho_solve((L, True), F)),
+        mu = np.linalg.lstsq(F.T @ (cho_solve((L, True), F)),
         F.T @ (cho_solve((L, True), self.y))).reshape(-1, 1)
         # mu = (F.T @ (cho_solve((L, True), self.y))) / \
             # (F.T @ (cho_solve((L, True), F)))
