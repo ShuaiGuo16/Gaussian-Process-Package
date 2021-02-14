@@ -38,6 +38,18 @@ class GPInterpolator(GaussianProcess):
             F = np.ones((n,1))
         elif self.trend == 'Linear':
             F = np.hstack((np.ones((n,1)), self.X))
+        elif self.trend == 'Quadratic':
+            # Problem dimensionality
+            dim = self.X.shape[1]
+            # Initialize F matrix
+            F = np.ones((n,1))
+            # Fill in linear part
+            F = np.hstack((F, self.X))
+            # Fill in quadratic part
+            for i in range(dim):
+                for j in range(i, dim):
+                    F = np.hstack((F, self.X[:, [i]]*self.X[:,[j]]))
+
 
         # Construct correlation matrix
         K = self.Corr(self.X, self.X, theta) + np.eye(n)*self.nugget
