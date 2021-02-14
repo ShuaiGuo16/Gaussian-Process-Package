@@ -126,7 +126,7 @@ class GPInterpolator(GaussianProcess):
         Input
         -----
         X_test (array): test set, shape (n_samples, n_features)
-        trend: trend values at test sites
+        trend: trend values at test sites, shape (n_samples, n_functions)
         cov_return (bool): return/not return covariance matrix
 
         Output
@@ -146,17 +146,17 @@ class GPInterpolator(GaussianProcess):
 
         elif self.trend == 'Linear':
             obs = np.hstack((np.ones((n,1)), X_test))
-            f = obs.T@self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+            f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
 
         elif self.trend == 'Quadratic':
             obs = np.ones((n,1))
             obs = np.hstack((obs, X_test))
             for i in range(dim):
                     obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
-            f = obs.T@self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
-            
+            f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
         else:
-            f = trend.T@self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+            f = trend @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
 
 
         # Variance prediction
