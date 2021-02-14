@@ -57,11 +57,13 @@ class GPInterpolator(GaussianProcess):
         L = np.linalg.cholesky(K)
 
         # Mean estimation
-        mu = (F.T @ (cho_solve((L, True), self.y))) / \
-            (F.T @ (cho_solve((L, True), F)))
+        mu = linalg.lstsq(F.T @ (cho_solve((L, True), F)),
+        F.T @ (cho_solve((L, True), self.y))).reshape(-1, 1)
+        # mu = (F.T @ (cho_solve((L, True), self.y))) / \
+            # (F.T @ (cho_solve((L, True), F)))
 
         # Variance estimation
-        SigmaSqr = (self.y-mu*F).T @ (cho_solve((L, True), self.y-mu*F)) / n
+        SigmaSqr = (self.y-F@mu).T @ (cho_solve((L, True), self.y-F@mu)) / n
 
         # Compute log-likelihood
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
