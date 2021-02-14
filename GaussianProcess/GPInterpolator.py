@@ -36,6 +36,8 @@ class GPInterpolator(GaussianProcess):
 
         if self.trend == 'Const':
             F = np.ones((n,1))
+        elif self.trend == 'Linear':
+            F = np.hstack((np.ones((n,1)), self.X))
 
         # Construct correlation matrix
         K = self.Corr(self.X, self.X, theta) + np.eye(n)*self.nugget
