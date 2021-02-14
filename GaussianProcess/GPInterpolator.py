@@ -49,6 +49,8 @@ class GPInterpolator(GaussianProcess):
             for i in range(dim):
                 for j in range(i, dim):
                     F = np.hstack((F, self.X[:, [i]]*self.X[:,[j]]))
+        else:
+            F = self.trend 
 
 
         # Construct correlation matrix
