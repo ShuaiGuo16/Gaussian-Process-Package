@@ -48,4 +48,12 @@ class GaussianProcess:
             for i in range(X1.shape[0]):
                 K[i,:] = np.exp(-np.sum(theta*(X1[i,:]-X2)**2, axis=1))
 
+        elif self.kernel == 'Matern-3_2':
+            # Matern-3/2 kernel
+            for i in range(X1.shape[0]):
+                comp = np.sqrt(3)*theta*np.abs(X1[i,:]-X2)
+                K[i,:] = np.prod(1+comp, axis=1)*np.exp(-np.sum(comp, axis=1))
+
+
+
             return K
