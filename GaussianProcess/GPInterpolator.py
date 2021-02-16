@@ -207,7 +207,7 @@ class GPInterpolator(GaussianProcess):
         # Inverse of kernel matrix
         inv_K = np.linalg.inv(self.K)
 
-        H = self.F @ np.linalg.inv(self.F.T @ self.F)*self.F.T
+        H = self.F @ np.linalg.inv(self.F.T @ self.F) @ self.F.T
         d = self.y - self.F @ self.mu
 
         # Calculate CV error
