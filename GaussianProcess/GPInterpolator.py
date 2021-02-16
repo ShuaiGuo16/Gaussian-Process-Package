@@ -191,3 +191,28 @@ class GPInterpolator(GaussianProcess):
         RMSE = np.sqrt(np.mean((y_pred-y_test.flatten())**2))
 
         return RMSE
+
+    def LOOCV(self):
+        """Calculate leave-one-out cross-validation error
+
+        Approximation algorithm is used speed up the calculation, see
+        [Ref] H. Liu, et al., An adaptive sampling approach for Kriging metamodeling
+        by maximizing expected prediction error. Computers and Chemical Engineering.
+        (https://www.sciencedirect.com/science/article/abs/pii/S009813541730234X)
+
+        Output:
+        e_CV: Leave-one-out cross validation error
+        """
+
+        # Inverse of kernel matrix
+        inv_K = np.inv(self.K)
+
+        H = self.F @ np.inv(self.F.T @ self.F)*self.F.T
+        d = self.y - self.F @ self.mu
+
+        # Calculate CV error
+        e_CV = np.zeros(self.X.shape[0])
+        for i in range(self.X.shape[0]):
+            e_CV[i] = (inv_K[i,:] @ (d + H[:,i]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
+
+        return e_CV
