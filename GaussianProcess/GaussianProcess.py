@@ -56,4 +56,4 @@ class GaussianProcess:
 
 
 
-            return K
+        return K
