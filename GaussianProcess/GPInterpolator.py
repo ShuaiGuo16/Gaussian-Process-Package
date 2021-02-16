@@ -213,6 +213,6 @@ class GPInterpolator(GaussianProcess):
         # Calculate CV error
         e_CV = np.zeros(self.X.shape[0])
         for i in range(self.X.shape[0]):
-            e_CV[i] = (inv_K[i,:] @ (d + H[:,i]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
+            e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
 
         return e_CV
