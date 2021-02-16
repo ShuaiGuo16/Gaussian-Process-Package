@@ -205,7 +205,7 @@ class GPInterpolator(GaussianProcess):
         """
 
         # Inverse of kernel matrix
-        inv_K = np.inv(self.K)
+        inv_K = np.linalg.inv(self.K)
 
         H = self.F @ np.inv(self.F.T @ self.F)*self.F.T
         d = self.y - self.F @ self.mu
