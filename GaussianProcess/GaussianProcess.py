@@ -65,14 +65,12 @@ class GaussianProcess:
                 comp = np.zeros_like(X2)
                 diff = theta*np.abs(X1[i,:]-X2)
                 # Filter values - first condition
-                comp[diff>=1] = 0
-                # Filter values - second condition
                 bool_table = (diff<1) & (diff>0.2)
                 comp[bool_table] = 1.25*(1-diff[bool_table])**3
-                # Filter values - third condition
+                # Filter values - second condition
                 bool_table = (diff<=0.2) & (diff>=0)
                 comp[bool_table] = 1-15*diff[bool_table]**2+30*diff[bool_table]**3
                 # Construct kernel matrix
                 K[i,:] = np.prod(comp, axis=1)
-                
+
         return K
