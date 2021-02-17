@@ -5,21 +5,22 @@ class GaussianProcess:
     """A class that trains a Gaussian Process model
     to approximate functions"""
 
-    def __init__(self, n_restarts, optimizer,inital_point,
+    def __init__(self, n_restarts, opt, inital_point,
     kernel, trend, nugget):
         """Initialize a Gaussian Process model
 
         Input
         ------
         n_restarts (int): number of restarts of the local optimizer
-        optimizer (string): algorithm of local optimization
+        opt(dict): specify optimization parameters
                    (see scipy.optimize.minimize methods)
+                   {'optimizer': str, 'jac': bool}
         inital_point (array): user-specified starting points
         kernel (string): kernel type
         nugget (float): nugget term"""
 
         self.n_restarts = n_restarts
-        self.optimizer = optimizer
+        self.opt = opt
         self.init_point = inital_point
         self.kernel = kernel
         self.trend = trend
