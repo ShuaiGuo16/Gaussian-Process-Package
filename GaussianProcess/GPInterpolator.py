@@ -228,7 +228,9 @@ class GPInterpolator(GaussianProcess):
         inv_K = np.linalg.inv(self.K)
 
         H = self.F @ np.linalg.inv(self.F.T @ self.F) @ self.F.T
-        d = self.y - self.F @ self.mu
+        d = self.y - self.F @
+
+        self.mu
 
         # Calculate CV error
         e_CV = np.zeros(self.X.shape[0])
@@ -236,3 +238,23 @@ class GPInterpolator(GaussianProcess):
             e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
 
         return e_CV
+
+    def realizations(self, N, X_eval):
+        """Draw realizations from posterior distribution of
+        the trained GP metamodeling
+
+        Input:
+        -----
+        N: Number of realizations
+        X_eval: Evaluate coordinates
+
+        Output:
+        -------
+        samples: Generated realizations"""
+
+        f, SSqr, Cov = self.predict(X_eval, cov_return=True)
+        Cov = (Cov + Cov.T)/2
+
+        samples = np.random.default_rng().multivariate_normal(mean=f, cov=Cov, size=N).T
+
+        return samples
