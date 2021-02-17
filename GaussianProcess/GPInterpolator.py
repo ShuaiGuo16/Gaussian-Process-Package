@@ -255,4 +255,4 @@ class GPInterpolator(GaussianProcess):
 
         samples = np.random.default_rng().multivariate_normal(mean=f, cov=Cov, size=N)
 
-        return samples.T
+        return samples
