@@ -129,6 +129,9 @@ class GPInterpolator(GaussianProcess):
         y (array): shape (n_samples, 1)
         theta: (array): correlation legnths for different dimensions"""
 
+        # Update training data
+        self.X, self.y = X, y
+
         # Update attributes
         self.NegLnlike = self.Neglikelihood(self.theta)
 
