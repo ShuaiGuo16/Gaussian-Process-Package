@@ -69,10 +69,27 @@ class GPInterpolator(GaussianProcess):
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
         NegLnLike = (n/2)*np.log(SigmaSqr) + 0.5*LnDetK
 
+        # Compute derivative of log-likelihood (adjoint)
+        # 1-Construct adjoint kernel matrix
+        adjoint_K = 1/(2*SigmaSqr)*((cho_solve((L, True), self.y-F@mu)) @
+        (cho_solve((L, True), self.y-F@mu)).T) - 0.5*(cho_solve((L, True), np.eye(n)))
+
+        K_combo = K*adjoint_K
+
+        # 2-Calculate derivatives
+        total_sum = np.zeros(self.X.shape[1])
+
+        for i in range(self.X.shape[1]):
+            broadcast = (np.matlib.repmat(self.X[:,[i]],1,n)-
+            np.matlib.repmat(self.X[:,[i]].T,n,1))**2
+            total_sum[i] = np.concatenate(broadcast*K_combo).sum()
+
+        NegLnLikeDev = np.log(10)*theta*total_sum
+
         # Update attributes
         self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
 
-        return NegLnLike.flatten()
+        return NegLnLike.flatten(), NegLnLikeDev.flatten()
 
     def fit(self, X, y):
         """GP model training
