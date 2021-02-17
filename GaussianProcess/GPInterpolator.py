@@ -248,11 +248,11 @@ class GPInterpolator(GaussianProcess):
 
         Output:
         -------
-        samples: Generated realizations"""
+        samples: Generated realizations, shape (N, n_features)"""
 
         f, SSqr, Cov = self.predict(X_eval, cov_return=True)
         Cov = (Cov + Cov.T)/2
 
         samples = np.random.default_rng().multivariate_normal(mean=f, cov=Cov, size=N)
 
-        return samples
+        return samples.T
