@@ -120,6 +120,22 @@ class GPInterpolator(GaussianProcess):
         # Update attributes
         self.NegLnlike = self.Neglikelihood(self.theta)
 
+    def predict_only(self, X, y, theta):
+        """Predict-only mode, with given theta value
+
+        Input:
+        -----
+        X (array): shape (n_samples, n_features)
+        y (array): shape (n_samples, 1)
+        theta: (array): correlation legnths for different dimensions"""
+
+        # Update training data
+        self.X, self.y = X, y
+
+        # Update attributes
+        self.theta = theta
+        self.NegLnlike = self.Neglikelihood(self.theta)
+
     def predict(self, X_test, trend=None, cov_return=False):
         """GP model predicting
 
@@ -174,6 +190,10 @@ class GPInterpolator(GaussianProcess):
             # Return values
             return f.flatten(), SSqr.flatten()
 
+    def get_params(self, deep = False):
+        return {'n_restarts':self.n_restarts, 'optimizer': self.optimizer,
+        'inital_point': self.init_point, 'verbose': self.verbose,
+        'kernel': self.kernel, 'trend': self.trend, 'nugget': self.nugget}
 
     def score(self, X_test, y_test):
         """Calculate root mean squared error
@@ -191,3 +211,28 @@ class GPInterpolator(GaussianProcess):
         RMSE = np.sqrt(np.mean((y_pred-y_test.flatten())**2))
 
         return RMSE
+
+    def LOOCV(self):
+        """Calculate leave-one-out cross-validation error
+
+        Approximation algorithm is used speed up the calculation, see
+        [Ref] H. Liu, et al., An adaptive sampling approach for Kriging metamodeling
+        by maximizing expected prediction error. Computers and Chemical Engineering.
+        (https://www.sciencedirect.com/science/article/abs/pii/S009813541730234X)
+
+        Output:
+        e_CV: Leave-one-out cross validation error
+        """
+
+        # Inverse of kernel matrix
+        inv_K = np.linalg.inv(self.K)
+
+        H = self.F @ np.linalg.inv(self.F.T @ self.F) @ self.F.T
+        d = self.y - self.F @ self.mu
+
+        # Calculate CV error
+        e_CV = np.zeros(self.X.shape[0])
+        for i in range(self.X.shape[0]):
+            e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
+
+        return e_CV
