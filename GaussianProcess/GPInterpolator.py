@@ -11,14 +11,14 @@ class GPInterpolator(GaussianProcess):
     """A class that trains a Gaussian Process model
     to interpolate functions"""
 
-    def __init__(self, n_restarts=10, optimizer='L-BFGS-B',
-    inital_point=None, verbose=False,
+    def __init__(self, n_restarts=20, opt={'optimizer':'L-BFGS-B',
+    'jac': True}, inital_point=None, verbose=False,
     kernel='Gaussian', trend='Const', nugget=1e-10):
 
         # Display optimization log
         self.verbose = verbose
 
-        super().__init__(n_restarts, optimizer, inital_point,
+        super().__init__(n_restarts, opt, inital_point,
         kernel, trend, nugget)
 
     def Neglikelihood(self, theta):
@@ -30,7 +30,8 @@ class GPInterpolator(GaussianProcess):
 
         Output
         ------
-        NegLnLike: Negative log-likelihood value"""
+        NegLnLike: Negative log-likelihood value
+        NegLnLikeDev (optional): Derivatives of NegLnLike"""
 
         theta = 10**theta    # Correlation length
         n = self.X.shape[0]  # Number of training instances
@@ -70,27 +71,33 @@ class GPInterpolator(GaussianProcess):
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
         NegLnLike = (n/2)*np.log(SigmaSqr) + 0.5*LnDetK
 
-        # Compute derivative of log-likelihood (adjoint)
-        # 1-Construct adjoint kernel matrix
-        adjoint_K = 1/(2*SigmaSqr)*((cho_solve((L, True), self.y-F@mu)) @
-        (cho_solve((L, True), self.y-F@mu)).T) - 0.5*(cho_solve((L, True), np.eye(n)))
+        if self.opt['jac'] is False:
 
-        K_combo = K*adjoint_K
+            return NegLnLike.flatten()
 
-        # 2-Calculate derivatives
-        total_sum = np.zeros(self.X.shape[1])
+        else:
 
-        for i in range(self.X.shape[1]):
-            broadcast = (np.matlib.repmat(self.X[:,[i]],1,n)-
-            np.matlib.repmat(self.X[:,[i]].T,n,1))**2
-            total_sum[i] = np.concatenate(broadcast*K_combo).sum()
+            # Compute derivative of log-likelihood (adjoint)
+            # 1-Construct adjoint kernel matrix
+            adjoint_K = 1/(2*SigmaSqr)*((cho_solve((L, True), self.y-F@mu)) @
+            (cho_solve((L, True), self.y-F@mu)).T) - 0.5*(cho_solve((L, True), np.eye(n)))
 
-        NegLnLikeDev = np.log(10)*theta*total_sum
+            K_combo = K*adjoint_K
 
-        # Update attributes
-        self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
+            # 2-Calculate derivatives
+            total_sum = np.zeros(self.X.shape[1])
 
-        return NegLnLike.flatten(), NegLnLikeDev.flatten()
+            for i in range(self.X.shape[1]):
+                broadcast = (np.matlib.repmat(self.X[:,[i]],1,n)-
+                np.matlib.repmat(self.X[:,[i]].T,n,1))**2
+                total_sum[i] = np.concatenate(broadcast*K_combo).sum()
+
+            NegLnLikeDev = np.log(10)*theta*total_sum
+
+            # Update attributes
+            self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
+
+            return NegLnLike.flatten(), NegLnLikeDev.flatten()
 
     def fit(self, X, y):
         """GP model training
@@ -121,8 +128,11 @@ class GPInterpolator(GaussianProcess):
         opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
         opt_func = np.zeros(self.n_restarts)
         for i in range(self.n_restarts):
-            res = minimize(self.Neglikelihood, initial_points[i,:], jac=True,
-            method=self.optimizer, bounds=bnds)
+            res = minimize(self.Neglikelihood,
+            initial_points[i,:],
+            jac=self.opt['jac'],
+            method=self.opt['optimizer'],
+            bounds=bnds)
 
             opt_para[i,:] = res.x
             opt_func[i] = res.fun
@@ -136,7 +146,10 @@ class GPInterpolator(GaussianProcess):
         self.theta = opt_para[np.argmin(opt_func)]
 
         # Update attributes
-        self.NegLnlike = self.Neglikelihood(self.theta)
+        if self.opt['jac'] is False:
+            self.NegLnlike = self.Neglikelihood(self.theta)
+        else:
+            self.NegLnlike, self.NegLnLikeDev = self.Neglikelihood(self.theta)
 
     def predict_only(self, X, y, theta):
         """Predict-only mode, with given theta value
