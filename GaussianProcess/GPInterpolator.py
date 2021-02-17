@@ -1,5 +1,6 @@
 # import all packages
 import numpy as np
+import numpy.matlib
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.linalg import cho_solve
@@ -67,12 +68,29 @@ class GPInterpolator(GaussianProcess):
 
         # Compute log-likelihood
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
-        LnLike = -(n/2)*np.log(SigmaSqr) - 0.5*LnDetK
+        NegLnLike = (n/2)*np.log(SigmaSqr) + 0.5*LnDetK
+
+        # Compute derivative of log-likelihood (adjoint)
+        # 1-Construct adjoint kernel matrix
+        adjoint_K = 1/(2*SigmaSqr)*((cho_solve((L, True), self.y-F@mu)) @
+        (cho_solve((L, True), self.y-F@mu)).T) - 0.5*(cho_solve((L, True), np.eye(n)))
+
+        K_combo = K*adjoint_K
+
+        # 2-Calculate derivatives
+        total_sum = np.zeros(self.X.shape[1])
+
+        for i in range(self.X.shape[1]):
+            broadcast = (np.matlib.repmat(self.X[:,[i]],1,n)-
+            np.matlib.repmat(self.X[:,[i]].T,n,1))**2
+            total_sum[i] = np.concatenate(broadcast*K_combo).sum()
+
+        NegLnLikeDev = np.log(10)*theta*total_sum
 
         # Update attributes
         self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
 
-        return -LnLike.flatten()
+        return NegLnLike.flatten(), NegLnLikeDev.flatten()
 
     def fit(self, X, y):
         """GP model training
@@ -103,7 +121,7 @@ class GPInterpolator(GaussianProcess):
         opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
         opt_func = np.zeros(self.n_restarts)
         for i in range(self.n_restarts):
-            res = minimize(self.Neglikelihood, initial_points[i,:],
+            res = minimize(self.Neglikelihood, initial_points[i,:], jac=True,
             method=self.optimizer, bounds=bnds)
 
             opt_para[i,:] = res.x
@@ -179,7 +197,7 @@ class GPInterpolator(GaussianProcess):
         SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
 
         # Calculate covariance
-        if cov_return == 'True':
+        if cov_return is True:
             Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)
              - k.T @ (cho_solve((self.L, True), k)))
 
@@ -236,3 +254,23 @@ class GPInterpolator(GaussianProcess):
             e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
 
         return e_CV
+
+    def realizations(self, N, X_eval):
+        """Draw realizations from posterior distribution of
+        the trained GP metamodeling
+
+        Input:
+        -----
+        N: Number of realizations
+        X_eval: Evaluate coordinates
+
+        Output:
+        -------
+        samples: Generated realizations, shape (N, n_features)"""
+
+        f, SSqr, Cov = self.predict(X_eval, cov_return=True)
+        Cov = (Cov + Cov.T)/2
+
+        samples = np.random.default_rng().multivariate_normal(mean=f, cov=Cov, size=N)
+
+        return samples
