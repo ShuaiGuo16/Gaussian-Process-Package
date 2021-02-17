@@ -133,7 +133,7 @@ class GPInterpolator(GaussianProcess):
         self.X, self.y = X, y
 
         # Update attributes
-        self.NegLnlike = self.Neglikelihood(self.theta)
+        self.NegLnlike = self.Neglikelihood(theta)
 
     def predict(self, X_test, trend=None, cov_return=False):
         """GP model predicting
