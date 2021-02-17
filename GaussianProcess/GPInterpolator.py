@@ -67,12 +67,12 @@ class GPInterpolator(GaussianProcess):
 
         # Compute log-likelihood
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
-        LnLike = -(n/2)*np.log(SigmaSqr) - 0.5*LnDetK
+        NegLnLike = (n/2)*np.log(SigmaSqr) + 0.5*LnDetK
 
         # Update attributes
         self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
 
-        return -LnLike.flatten()
+        return NegLnLike.flatten()
 
     def fit(self, X, y):
         """GP model training
