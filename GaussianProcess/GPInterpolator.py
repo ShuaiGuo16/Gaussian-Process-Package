@@ -120,7 +120,7 @@ class GPInterpolator(GaussianProcess):
         opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
         opt_func = np.zeros(self.n_restarts)
         for i in range(self.n_restarts):
-            res = minimize(self.Neglikelihood, initial_points[i,:],
+            res = minimize(self.Neglikelihood, initial_points[i,:], jac=True,
             method=self.optimizer, bounds=bnds)
 
             opt_para[i,:] = res.x
