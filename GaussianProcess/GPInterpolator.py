@@ -176,7 +176,7 @@ class GPInterpolator(GaussianProcess):
 
     def get_params(self, deep = False):
         return {'n_restarts':self.n_restarts, 'optimizer': self.optimizer,
-        'inital_point': self.inital_point, 'verbose': self.verbose,
+        'inital_point': self.init_point, 'verbose': self.verbose,
         'kernel': self.kernel, 'trend': self.trend, 'nugget': self.nugget}
 
     def score(self, X_test, y_test):
