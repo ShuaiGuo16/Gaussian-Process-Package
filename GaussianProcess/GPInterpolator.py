@@ -179,7 +179,7 @@ class GPInterpolator(GaussianProcess):
         SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
 
         # Calculate covariance
-        if cov_return == 'True':
+        if cov_return is True:
             Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)
              - k.T @ (cho_solve((self.L, True), k)))
 
