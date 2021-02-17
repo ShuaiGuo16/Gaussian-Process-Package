@@ -1,5 +1,6 @@
 # import all packages
 import numpy as np
+import numpy.matlib
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.linalg import cho_solve
