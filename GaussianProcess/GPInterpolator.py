@@ -71,10 +71,15 @@ class GPInterpolator(GaussianProcess):
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
         NegLnLike = (n/2)*np.log(SigmaSqr) + 0.5*LnDetK
 
+        # Update attributes
+        self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
+
+        # If derivatives are not calculated
         if self.opt['jac'] is False:
 
             return NegLnLike.flatten()
 
+        # If derivatives are calculated
         else:
 
             # Compute derivative of log-likelihood (adjoint)
@@ -93,9 +98,6 @@ class GPInterpolator(GaussianProcess):
                 total_sum[i] = np.concatenate(broadcast*K_combo).sum()
 
             NegLnLikeDev = np.log(10)*theta*total_sum
-
-            # Update attributes
-            self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
 
             return NegLnLike.flatten(), NegLnLikeDev.flatten()
 
