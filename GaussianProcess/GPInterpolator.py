@@ -120,6 +120,18 @@ class GPInterpolator(GaussianProcess):
         # Update attributes
         self.NegLnlike = self.Neglikelihood(self.theta)
 
+    def predict_only(self, X, y, theta):
+        """Predict-only mode, with given theta value
+
+        Input:
+        -----
+        X (array): shape (n_samples, n_features)
+        y (array): shape (n_samples, 1)
+        theta: (array): correlation legnths for different dimensions"""
+
+        # Update attributes
+        self.NegLnlike = self.Neglikelihood(self.theta)
+
     def predict(self, X_test, trend=None, cov_return=False):
         """GP model predicting
 
