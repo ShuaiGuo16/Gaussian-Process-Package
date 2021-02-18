@@ -167,7 +167,11 @@ class GPInterpolator(GaussianProcess):
 
         # Update attributes
         self.theta = theta
-        self.NegLnlike = self.Neglikelihood(self.theta)
+
+        if self.opt['jac'] is False:
+            self.NegLnlike = self.Neglikelihood(self.theta)
+        else:
+            self.NegLnlike, self.NegLnLikeDev = self.Neglikelihood(self.theta)
 
     def predict(self, X_test, trend=None, cov_return=False):
         """GP model predicting
@@ -224,7 +228,7 @@ class GPInterpolator(GaussianProcess):
             return f.flatten(), SSqr.flatten()
 
     def get_params(self, deep = False):
-        return {'n_restarts':self.n_restarts, 'optimizer': self.optimizer,
+        return {'n_restarts':self.n_restarts, 'opt': self.opt,
         'inital_point': self.init_point, 'verbose': self.verbose,
         'kernel': self.kernel, 'trend': self.trend, 'nugget': self.nugget}
 
