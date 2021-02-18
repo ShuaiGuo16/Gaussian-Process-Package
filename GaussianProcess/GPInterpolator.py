@@ -271,6 +271,45 @@ class GPInterpolator(GaussianProcess):
 
         return e_CV, LOO
 
+    def enrichment(self, criterion, candidate):
+        """Training sample enrichment for active learning
+
+        Input:
+        ------
+        criterion (str): learning criterion
+        candidate (array): candidate sample pool, shape (n_samples, n_features)
+
+        Output:
+        -------
+        target (float): the optimum target value
+        sample (array): Selected sample"""
+
+        if criterion = 'EPE':
+
+            # Compute cross-validation error
+            LOO = self.LOOCV()
+
+            # Compute prediction variance
+            pred, pred_var = self.predict(candidate)
+
+            # Calculate bias
+            bias = np.zeros(candidate.shape[0])
+            for i in range(candidate.shape[0]):
+                # Determine bias
+                closest_index = np.argmin(np.sqrt(np.sum((candidate-self.X)**2)))
+                bias[i] = LOO[closest_index]**2
+
+            # Calculate expected prediction error
+            expected_error = bias + pred_var
+            target = np.max(expected_error)
+
+            # Select promising sample
+            sample = candidate[[np.argmax(EPE)],:]
+
+        
+
+        return target, sample
+
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
         the trained GP metamodeling
