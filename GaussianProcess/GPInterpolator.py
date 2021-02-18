@@ -296,7 +296,7 @@ class GPInterpolator(GaussianProcess):
             bias = np.zeros(candidate.shape[0])
             for i in range(candidate.shape[0]):
                 # Determine bias
-                closest_index = np.argmin(np.sqrt(np.sum((candidate-self.X)**2)))
+                closest_index = np.argmin(np.sqrt(np.sum((candidate[[i],:]-self.X)**2)))
                 bias[i] = LOO[closest_index]**2
 
             # Calculate expected prediction error
@@ -306,7 +306,17 @@ class GPInterpolator(GaussianProcess):
             # Select promising sample
             sample = candidate[[np.argmax(EPE)],:]
 
-        
+        elif criterion = 'U':
+
+            # Make predictions
+            pred, pred_var = self.predict(candidate)
+
+            # Calculate U values
+            U_values = np.abs(pred)/np.sqrt(pred_var)
+
+            # Select promising sample
+            target = np.min(U_values)
+            sample = candidate[[np.argmin(U_values)],:]
 
         return target, sample
 
