@@ -258,14 +258,18 @@ class GPInterpolator(GaussianProcess):
         (https://www.mitpressjournals.org/doi/abs/10.1162/08997660151134343)
 
         Output:
-        e_CV: Leave-one-out cross validation error
+        ------
+        LOO (array): Leave-one-out cross validation error at each training location
+        e_CV: mean squared LOOCV error
         """
 
         # Calculate CV error
         Q = cho_solve((self.L, True), self.y-self.F@self.mu)
-        e_CV = Q.flatten()/np.diag(cho_solve((self.L, True), np.eye(self.X.shape[0])))
+        LOO = Q.flatten()/np.diag(cho_solve((self.L, True), np.eye(self.X.shape[0])))
 
-        return e_CV**2
+        e_CV = np.sqrt(np.mean(LOO**2))
+
+        return e_CV, LOO
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
