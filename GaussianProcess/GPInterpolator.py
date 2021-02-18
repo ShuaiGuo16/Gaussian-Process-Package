@@ -253,27 +253,19 @@ class GPInterpolator(GaussianProcess):
         """Calculate leave-one-out cross-validation error
 
         Approximation algorithm is used speed up the calculation, see
-        [Ref] H. Liu, et al., An adaptive sampling approach for Kriging metamodeling
-        by maximizing expected prediction error. Computers and Chemical Engineering.
-        (https://www.sciencedirect.com/science/article/abs/pii/S009813541730234X)
+        [Ref]Predictive approaches for choosing hyperparameters in
+        Gaussian processes. Neural Comput. 13, 1103–1118
+        (https://www.mitpressjournals.org/doi/abs/10.1162/08997660151134343)
 
         Output:
         e_CV: Leave-one-out cross validation error
         """
 
-        # Inverse of kernel matrix
-        inv_K = np.linalg.inv(self.K)
-
-        H = self.F @ np.linalg.inv(self.F.T @ self.F) @ self.F.T
-        d = self.y - self.F @ self.mu
-
         # Calculate CV error
-        e_CV_new = (inv_K @ (self.y - self.F @ self.mu)).flatten()/np.diag(inv_K)
-        e_CV_old = np.zeros(self.X.shape[0])
-        for i in range(self.X.shape[0]):
-            e_CV_old[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
+        Q = cho_solve((self.L, True), self.y-self.F@self.mu)
+        e_CV = Q.flatten()/np.diag(cho_solve((self.L, True), np.eye(self.X.shape[0])))
 
-        return e_CV_new**2, e_CV_old
+        return e_CV**2
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
