@@ -268,12 +268,12 @@ class GPInterpolator(GaussianProcess):
         d = self.y - self.F @ self.mu
 
         # Calculate CV error
-        e_CV = (inv_K @ (self.y - self.F @ self.mu)).flatten()/np.diag(inv_K)
-        # e_CV = np.zeros(self.X.shape[0])
-        # for i in range(self.X.shape[0]):
-            # e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
+        e_CV_new = (inv_K @ (self.y - self.F @ self.mu)).flatten()/np.diag(inv_K)
+        e_CV_old = np.zeros(self.X.shape[0])
+        for i in range(self.X.shape[0]):
+            e_CV_old[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
 
-        return e_CV**2
+        return e_CV_new**2, e_CV_old
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
