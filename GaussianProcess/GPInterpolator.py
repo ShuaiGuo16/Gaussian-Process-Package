@@ -269,7 +269,7 @@ class GPInterpolator(GaussianProcess):
         # for i in range(self.X.shape[0]):
             # e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
 
-        return e_CV
+        return e_CV**2
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
