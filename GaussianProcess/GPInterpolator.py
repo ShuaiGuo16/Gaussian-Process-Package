@@ -264,7 +264,7 @@ class GPInterpolator(GaussianProcess):
         d = self.y - self.F @ self.mu
 
         # Calculate CV error
-        e_CV = inv_K @ (self.y - self.F @ self.mu)/np.diag(inv_K)
+        e_CV = (inv_K @ (self.y - self.F @ self.mu)).flatten()/np.diag(inv_K)
         # e_CV = np.zeros(self.X.shape[0])
         # for i in range(self.X.shape[0]):
             # e_CV[i] = (inv_K[[i],:] @ (d + H[:,[i]]*d[i]/(1-H[i,i])) / inv_K[i,i])**2
