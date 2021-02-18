@@ -271,7 +271,7 @@ class GPInterpolator(GaussianProcess):
 
         return e_CV, LOO
 
-    def enrichment(self, criterion, candidate):
+    def enrichment(self, criterion, candidate, diagnose=False):
         """Training sample enrichment for active learning
 
         Input:
@@ -282,7 +282,8 @@ class GPInterpolator(GaussianProcess):
         Output:
         -------
         target (float): the optimum target value
-        sample (array): Selected sample"""
+        sample (array): Selected sample
+        diagnostics (array): optional, the array of diagnostic results"""
 
         if criterion = 'EPE':
 
@@ -306,6 +307,9 @@ class GPInterpolator(GaussianProcess):
             # Select promising sample
             sample = candidate[[np.argmax(EPE)],:]
 
+            # For diagnose purposes
+            diagnostics = expected_error
+
         elif criterion = 'U':
 
             # Make predictions
@@ -318,7 +322,13 @@ class GPInterpolator(GaussianProcess):
             target = np.min(U_values)
             sample = candidate[[np.argmin(U_values)],:]
 
-        return target, sample
+            # For diagnose purposes
+            diagnostics = U_values
+
+        if diagnose is True:
+            return target, sample, diagnostics
+        else:
+            return target, sample
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
