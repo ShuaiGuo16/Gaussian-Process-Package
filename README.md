@@ -6,7 +6,7 @@ a Gaussian Process model.
 
 Currently, this package supports:
 
-- Training a Gaussian Process interpolator:
+1. Training a Gaussian Process interpolator:
 
  - Various trend type: 'Const', 'Linear', 'Quadratic', 'Custom';
  - Various kernel type: 'Gaussian', 'Matern-3_2', 'Matern-5_2', 'Cubic';
