@@ -167,7 +167,11 @@ class GPInterpolator(GaussianProcess):
 
         # Update attributes
         self.theta = theta
-        self.NegLnlike = self.Neglikelihood(self.theta)
+
+        if self.opt['jac'] is False:
+            self.NegLnlike = self.Neglikelihood(self.theta)
+        else:
+            self.NegLnlike, self.NegLnLikeDev = self.Neglikelihood(self.theta)
 
     def predict(self, X_test, trend=None, cov_return=False):
         """GP model predicting
