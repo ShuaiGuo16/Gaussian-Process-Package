@@ -288,7 +288,7 @@ class GPInterpolator(GaussianProcess):
         if criterion == 'EPE':
 
             # Compute cross-validation error
-            LOO = self.LOOCV()
+            LOO = self.LOOCV()[1]
 
             # Compute prediction variance
             pred, pred_var = self.predict(candidate)
