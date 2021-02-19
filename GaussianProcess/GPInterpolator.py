@@ -285,7 +285,7 @@ class GPInterpolator(GaussianProcess):
         sample (array): Selected sample
         diagnostics (array): optional, the array of diagnostic results"""
 
-        if criterion = 'EPE':
+        if criterion == 'EPE':
 
             # Compute cross-validation error
             LOO = self.LOOCV()
@@ -310,7 +310,7 @@ class GPInterpolator(GaussianProcess):
             # For diagnose purposes
             diagnostics = expected_error
 
-        elif criterion = 'U':
+        elif criterion == 'U':
 
             # Make predictions
             pred, pred_var = self.predict(candidate)
