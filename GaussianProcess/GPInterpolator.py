@@ -258,14 +258,77 @@ class GPInterpolator(GaussianProcess):
         (https://www.mitpressjournals.org/doi/abs/10.1162/08997660151134343)
 
         Output:
-        e_CV: Leave-one-out cross validation error
+        ------
+        LOO (array): Leave-one-out cross validation error at each training location
+        e_CV: mean squared LOOCV error
         """
 
         # Calculate CV error
         Q = cho_solve((self.L, True), self.y-self.F@self.mu)
-        e_CV = Q.flatten()/np.diag(cho_solve((self.L, True), np.eye(self.X.shape[0])))
+        LOO = Q.flatten()/np.diag(cho_solve((self.L, True), np.eye(self.X.shape[0])))
 
-        return e_CV**2
+        e_CV = np.sqrt(np.mean(LOO**2))
+
+        return e_CV, LOO
+
+    def enrichment(self, criterion, candidate, diagnose=False):
+        """Training sample enrichment for active learning
+
+        Input:
+        ------
+        criterion (str): learning criterion
+        candidate (array): candidate sample pool, shape (n_samples, n_features)
+
+        Output:
+        -------
+        target (float): the optimum target value
+        sample (array): Selected sample
+        diagnostics (array): optional, the array of diagnostic results"""
+
+        if criterion = 'EPE':
+
+            # Compute cross-validation error
+            LOO = self.LOOCV()
+
+            # Compute prediction variance
+            pred, pred_var = self.predict(candidate)
+
+            # Calculate bias
+            bias = np.zeros(candidate.shape[0])
+            for i in range(candidate.shape[0]):
+                # Determine bias
+                closest_index = np.argmin(np.sqrt(np.sum((candidate[[i],:]-self.X)**2)))
+                bias[i] = LOO[closest_index]**2
+
+            # Calculate expected prediction error
+            expected_error = bias + pred_var
+            target = np.max(expected_error)
+
+            # Select promising sample
+            sample = candidate[[np.argmax(EPE)],:]
+
+            # For diagnose purposes
+            diagnostics = expected_error
+
+        elif criterion = 'U':
+
+            # Make predictions
+            pred, pred_var = self.predict(candidate)
+
+            # Calculate U values
+            U_values = np.abs(pred)/np.sqrt(pred_var)
+
+            # Select promising sample
+            target = np.min(U_values)
+            sample = candidate[[np.argmin(U_values)],:]
+
+            # For diagnose purposes
+            diagnostics = U_values
+
+        if diagnose is True:
+            return target, sample, diagnostics
+        else:
+            return target, sample
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
