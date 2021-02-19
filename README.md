@@ -14,3 +14,6 @@ a Gaussian Process model.
  - Integrated with Scikit-Learn to perform cross-validation,
  feature transformation, etc.;
  - Implemented fast approximation of leave-one-out cross-validation error;
+ - **Active Learning**:
+    - 'EPE' --> maximum expected prediction error learning;
+    - 'U' --> minimum classification error learning;
