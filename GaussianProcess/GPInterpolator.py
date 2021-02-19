@@ -297,7 +297,8 @@ class GPInterpolator(GaussianProcess):
             bias = np.zeros(candidate.shape[0])
             for i in range(candidate.shape[0]):
                 # Determine bias
-                closest_index = np.argmin(np.sqrt(np.sum((candidate[[i],:]-self.X)**2)))
+                distance_sqr = np.sum((candidate[[i],:]-self.X)**2, axis=1)
+                closest_index = np.argmin(np.sqrt(distance_sqr))
                 bias[i] = LOO[closest_index]**2
 
             # Calculate expected prediction error
