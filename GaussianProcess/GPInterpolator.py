@@ -283,6 +283,7 @@ class GPInterpolator(GaussianProcess):
         -------
         target (float): the optimum target value
         index (array): the index of the selected sample
+        reduced_pool (array): reduced sample pool (remove the selected sample)
         diagnostics (array): optional, the array of diagnostic results"""
 
         if criterion['Condition'] == 'EPE':
@@ -307,6 +308,7 @@ class GPInterpolator(GaussianProcess):
 
             # Select promising sample
             index = np.argmax(expected_error)
+            reduced_candidate = np.delete(candidate, obj=index, axis=0)
 
             # For diagnose purposes
             diagnostics = expected_error
@@ -322,14 +324,15 @@ class GPInterpolator(GaussianProcess):
             # Select promising sample
             target = np.min(U_values)
             index = np.argmin(U_values)
+            reduced_candidate = np.delete(candidate, obj=index, axis=0)
 
             # For diagnose purposes
             diagnostics = U_values
 
         if diagnose is True:
-            return target, index, diagnostics
+            return target, index, reduced_candidate, diagnostics
         else:
-            return target, index
+            return target, index, reduced_candidate
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
