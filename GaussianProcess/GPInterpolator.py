@@ -276,7 +276,7 @@ class GPInterpolator(GaussianProcess):
 
         Input:
         ------
-        criterion (str): learning criterion
+        criterion (dict): learning criterion
         candidate (array): candidate sample pool, shape (n_samples, n_features)
 
         Output:
@@ -285,7 +285,7 @@ class GPInterpolator(GaussianProcess):
         index (array): the index of the selected sample
         diagnostics (array): optional, the array of diagnostic results"""
 
-        if criterion == 'EPE':
+        if criterion['Condition'] == 'EPE':
 
             # Compute cross-validation error
             LOO = self.LOOCV()[1]
@@ -311,13 +311,13 @@ class GPInterpolator(GaussianProcess):
             # For diagnose purposes
             diagnostics = expected_error
 
-        elif criterion == 'U':
+        elif criterion['Condition'] == 'U':
 
             # Make predictions
             pred, pred_var = self.predict(candidate)
 
             # Calculate U values
-            U_values = np.abs(pred)/np.sqrt(pred_var)
+            U_values = np.abs(pred-criterion['Threshold'])/np.sqrt(pred_var)
 
             # Select promising sample
             target = np.min(U_values)
