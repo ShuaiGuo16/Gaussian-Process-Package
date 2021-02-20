@@ -283,6 +283,7 @@ class GPInterpolator(GaussianProcess):
         -------
         target (float): the optimum target value
         index (array): the index of the selected sample
+        orignal_pool (array): original sample pool
         reduced_pool (array): reduced sample pool (remove the selected sample)
         diagnostics (array): optional, the array of diagnostic results"""
 
@@ -336,9 +337,9 @@ class GPInterpolator(GaussianProcess):
             diagnostics = U_values
 
         if diagnose is True:
-            return target, sample, reduced_candidate, diagnostics
+            return target, sample, candidate, reduced_candidate, diagnostics
         else:
-            return target, sample, reduced_candidate
+            return target, sample, candidate, reduced_candidate
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
