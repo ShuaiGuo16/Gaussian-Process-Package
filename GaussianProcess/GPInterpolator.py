@@ -306,8 +306,11 @@ class GPInterpolator(GaussianProcess):
             expected_error = bias + pred_var
             target = np.max(expected_error)
 
-            # Select promising sample
+            # Locate promising sample
             index = np.argmax(expected_error)
+
+            # Select promising sample
+            sample = candidate[[index],:]
             reduced_candidate = np.delete(candidate, obj=index, axis=0)
 
             # For diagnose purposes
@@ -320,19 +323,22 @@ class GPInterpolator(GaussianProcess):
 
             # Calculate U values
             U_values = np.abs(pred-criterion['Threshold'])/np.sqrt(pred_var)
+            target = np.min(U_values)
+
+            # Locate promising sample
+            index = np.argmin(U_values)
 
             # Select promising sample
-            target = np.min(U_values)
-            index = np.argmin(U_values)
+            sample = candidate[[index],:]
             reduced_candidate = np.delete(candidate, obj=index, axis=0)
 
             # For diagnose purposes
             diagnostics = U_values
 
         if diagnose is True:
-            return target, index, reduced_candidate, diagnostics
+            return target, sample, reduced_candidate, diagnostics
         else:
-            return target, index, reduced_candidate
+            return target, sample, reduced_candidate
 
     def realizations(self, N, X_eval):
         """Draw realizations from posterior distribution of
