@@ -21,19 +21,21 @@ class GPRegressor(GaussianProcess):
         super().__init__(n_restarts, opt, inital_point,
         kernel, trend, nugget)
 
-    def Neglikelihood(self, theta, tau):
-        """Negative log-likelihood function
+    def Neglikelihood_unknown_noise(self, theta_tau):
+        """Negative log-likelihood function for unknown noise
 
         Input
         -----
-        theta (array): correlation legnths for different dimensions
-        tau (float): ratio between noise variance and total variance
+        theta_tau (array+float):
+              --> theta: correlation legnths for different dimensions
+              --> tau: ratio between noise variance and total variance
 
         Output
         ------
         NegLnLike: Negative log-likelihood value"""
 
-        theta = 10**theta    # Correlation length
+        theta = 10**theta_tau[:-1]    # Correlation length
+        tau = theta_tau[-1]           # Variance ratio
         n = self.X.shape[0]  # Number of training instances
 
         if self.trend == 'Const':
@@ -53,9 +55,8 @@ class GPRegressor(GaussianProcess):
         else:
             F = self.trend
 
-
         # Construct correlation matrix
-        K = (1-self.tau)*self.Corr(self.X, self.X, theta) + self.tau*np.eye(n)
+        K = (1-tau)*self.Corr(self.X, self.X, theta) + tau*np.eye(n)
         L = np.linalg.cholesky(K)
 
         # Mean estimation
@@ -72,8 +73,24 @@ class GPRegressor(GaussianProcess):
         # Update attributes
         self.K, self.F, self.L, self.mu, self.SigmaSqr = K, F, L, mu, SigmaSqr
 
-            return NegLnLike.flatten()
-            
+        return NegLnLike.flatten()
+
+
+        def Neglikelihood_known_noise(self, theta_SSq):
+            """Negative log-likelihood function for known noise
+
+            Input
+            -----
+            theta_SSq (array+float):
+                  --> theta: correlation legnths for different dimensions
+                  --> SSq: process variance
+
+            Output
+            ------
+            NegLnLike: Negative log-likelihood value"""
+
+
+
 
         def fit(self, X, y, noise='auto'):
             """GP model training
@@ -90,44 +107,46 @@ class GPRegressor(GaussianProcess):
 
             self.X, self.y = X, y
             self.noise = noise
-            lb, ub = -3, 2
+            lb, ub = -3, 2      # Range for theta
 
-            # Generate random starting points (Latin Hypercube)
-            lhd = lhs(self.X.shape[1], samples=self.n_restarts)
+            if noise is 'auto'  # For cases when noise term has to be estimated
 
-            # Scale random samples to the given bounds
-            initial_points = (ub-lb)*lhd + lb
+                # Range for tau
+                lb_tau, ub_tau = 0, 1
 
-            # Expand initial points if user specified them
-            if self.init_point is not None:
-                initial_points = np.vstack((initial_points, self.init_point))
+                # Generate random starting points (Latin Hypercube)
+                initial_points = lhs(self.X.shape[1]+1, samples=self.n_restarts)
 
-            # Create A Bounds instance for optimization
-            bnds = Bounds(lb*np.ones(X.shape[1]),ub*np.ones(X.shape[1]))
+                # Scale random samples to the given bounds
+                initial_points[:,:self.X.shape[1]] = \
+                              (ub-lb)*initial_points[:,:self.X.shape[1]] + lb
 
-            # Run local optimizer on all points
-            opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
-            opt_func = np.zeros(self.n_restarts)
-            for i in range(self.n_restarts):
-                res = minimize(self.Neglikelihood,
-                initial_points[i,:],
-                jac=self.opt['jac'],
-                method=self.opt['optimizer'],
-                bounds=bnds)
+                # Expand initial points if user specified them
+                if self.init_point is not None:
+                    initial_points = np.vstack((initial_points, self.init_point))
 
-                opt_para[i,:] = res.x
-                opt_func[i] = res.fun
+                # Create a Bounds instance for optimization
+                lower_bound = np.hstack((lb*np.ones(X.shape[1]), np.zeros(1)))
+                upper_bound = np.hstack((ub*np.ones(X.shape[1]), np.ones(1)))
+                bnds = Bounds(lower_bound, upper_bound)
 
-                # Display optimization progress in real-time
-                if self.verbose == True:
-                    print('Iteration {}: Likelihood={} \n'
-                    .format(str(i+1), np.min(opt_func[:i+1])))
+                # Run local optimizer on all points
+                opt_para = np.zeros((self.n_restarts, self.X.shape[1]+1))
+                opt_func = np.zeros(self.n_restarts)
+                for i in range(self.n_restarts):
+                    res = minimize(self.Neglikelihood_unknown_noise,
+                    initial_points[i,:],
+                    method=self.opt,
+                    bounds=bnds)
 
-            # Locate the optimum results
-            self.theta = opt_para[np.argmin(opt_func)]
+                    opt_para[i,:] = res.x
+                    opt_func[i] = res.fun
 
-            # Update attributes
-            if self.opt['jac'] is False:
-                self.NegLnlike = self.Neglikelihood(self.theta)
-            else:
-                self.NegLnlike, self.NegLnLikeDev = self.Neglikelihood(self.theta)
+                    # Display optimization progress in real-time
+                    if self.verbose == True:
+                        print('Iteration {}: Likelihood={} \n'
+                        .format(str(i+1), np.min(opt_func[:i+1])))
+
+                # Locate the optimum results
+                self.theta = opt_para[np.argmin(opt_func), :-1]
+                self.tau = opt_para[np.argmin(opt_func), -1]
