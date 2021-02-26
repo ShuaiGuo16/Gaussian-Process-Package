@@ -93,7 +93,7 @@ class GPRegressor(GaussianProcess):
             self.noise = noise
             lb, ub = -3, 2      # Range for theta
 
-            if self.noise is 'auto':
+            if self.noise == 'auto':
             # For cases when noise term has to be estimated
 
                 # Generate random starting points (Latin Hypercube)
