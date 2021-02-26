@@ -192,6 +192,29 @@ class GPRegressor(GaussianProcess):
             return f.flatten(), SSqr.flatten()
 
 
+    def predict_only(self, X, y, theta, tau):
+        """Predict-only mode, with given theta value
+
+        Input:
+        -----
+        X (array): shape (n_samples, n_features)
+        y (array): shape (n_samples, 1)
+        theta (array): correlation legnths for different dimensions
+        tau (float): ratio between noise variance and total variance"""
+
+        # Update training data
+        self.X, self.y = X, y
+
+        # Update attributes
+        self.theta = theta
+        self.tau = tau
+
+        self.NegLnlike = self.Neglikelihood_unknown_noise(
+        np.hstack((self.theta, self.tau*np.zeros(1)))
+        )
+
+
+
     def get_params(self, deep = False):
         return {'n_restarts':self.n_restarts, 'opt': self.opt,
         'inital_point': self.init_point, 'verbose': self.verbose,
