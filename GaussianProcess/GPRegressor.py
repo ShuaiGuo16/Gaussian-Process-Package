@@ -192,6 +192,12 @@ class GPRegressor(GaussianProcess):
             return f.flatten(), SSqr.flatten()
 
 
+    def get_params(self, deep = False):
+        return {'n_restarts':self.n_restarts, 'opt': self.opt,
+        'inital_point': self.init_point, 'verbose': self.verbose,
+        'kernel': self.kernel, 'trend': self.trend, 'nugget': self.nugget}
+
+
     def score(self, X_test, y_test):
         """Calculate root mean squared error
 
