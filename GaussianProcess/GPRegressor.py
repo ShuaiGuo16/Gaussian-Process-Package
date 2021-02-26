@@ -56,7 +56,7 @@ class GPRegressor(GaussianProcess):
             F = self.trend
 
         # Construct correlation matrix
-        K = (1-tau)*self.Corr(self.X, self.X, theta) + tau*np.eye(n)
+        K = (1-tau)*self.Corr(self.X, self.X, theta) + tau*np.eye(n) + + np.eye(n)*self.nugget
         L = np.linalg.cholesky(K)
 
         # Mean estimation
