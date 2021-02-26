@@ -176,11 +176,11 @@ class GPRegressor(GaussianProcess):
 
 
             # Variance prediction
-            SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
+            SSqr = self.SigmaSqr*((1-self.tau) - np.diag(k.T @ (cho_solve((self.L, True), k))))
 
             # Calculate covariance
             if cov_return is True:
-                Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)
+                Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)*(1-self.tau)
                  - k.T @ (cho_solve((self.L, True), k)))
 
                 # Return values
