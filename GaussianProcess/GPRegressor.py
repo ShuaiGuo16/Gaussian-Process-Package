@@ -76,117 +76,117 @@ class GPRegressor(GaussianProcess):
         return NegLnLike.flatten()
 
 
-        def fit(self, X, y, noise='auto'):
-            """GP model training
+    def fit(self, X, y, noise='auto'):
+        """GP model training
 
-            Input
-            -----
-            X (array): shape (n_samples, n_features)
-            y (array): shape (n_samples, 1)
-            noise (string/array): noise matrix.
-                                  --> 'auto': unknown homogeneous noise,
-                                              estimated by GPRegressor
-                                  --> array: known homogeneous/heterogeneous noise
-            """
+        Input
+        -----
+        X (array): shape (n_samples, n_features)
+        y (array): shape (n_samples, 1)
+        noise (string/array): noise matrix.
+                              --> 'auto': unknown homogeneous noise,
+                                          estimated by GPRegressor
+                              --> array: known homogeneous/heterogeneous noise
+        """
 
-            self.X, self.y = X, y
-            self.noise = noise
-            lb, ub = -3, 2      # Range for theta
+        self.X, self.y = X, y
+        self.noise = noise
+        lb, ub = -3, 2      # Range for theta
 
-            if self.noise == 'auto':
-            # For cases when noise term has to be estimated
+        if self.noise == 'auto':
+        # For cases when noise term has to be estimated
 
-                # Generate random starting points (Latin Hypercube)
-                initial_points = lhs(self.X.shape[1]+1, samples=self.n_restarts)
+            # Generate random starting points (Latin Hypercube)
+            initial_points = lhs(self.X.shape[1]+1, samples=self.n_restarts)
 
-                # Scale random samples to the given bounds
-                initial_points[:,:self.X.shape[1]] = \
-                              (ub-lb)*initial_points[:,:self.X.shape[1]] + lb
+            # Scale random samples to the given bounds
+            initial_points[:,:self.X.shape[1]] = \
+                          (ub-lb)*initial_points[:,:self.X.shape[1]] + lb
 
-                # Expand initial points if user specified them
-                if self.init_point is not None:
-                    initial_points = np.vstack((initial_points, self.init_point))
+            # Expand initial points if user specified them
+            if self.init_point is not None:
+                initial_points = np.vstack((initial_points, self.init_point))
 
-                # Create a Bounds instance for optimization
-                lower_bound = np.hstack((lb*np.ones(X.shape[1]), np.zeros(1)))
-                upper_bound = np.hstack((ub*np.ones(X.shape[1]), np.ones(1)))
-                bnds = Bounds(lower_bound, upper_bound)
+            # Create a Bounds instance for optimization
+            lower_bound = np.hstack((lb*np.ones(X.shape[1]), np.zeros(1)))
+            upper_bound = np.hstack((ub*np.ones(X.shape[1]), np.ones(1)))
+            bnds = Bounds(lower_bound, upper_bound)
 
-                # Run local optimizer on all points
-                opt_para = np.zeros((self.n_restarts, self.X.shape[1]+1))
-                opt_func = np.zeros(self.n_restarts)
-                for i in range(self.n_restarts):
-                    res = minimize(self.Neglikelihood_unknown_noise,
-                    initial_points[i,:],
-                    method=self.opt,
-                    bounds=bnds)
+            # Run local optimizer on all points
+            opt_para = np.zeros((self.n_restarts, self.X.shape[1]+1))
+            opt_func = np.zeros(self.n_restarts)
+            for i in range(self.n_restarts):
+                res = minimize(self.Neglikelihood_unknown_noise,
+                initial_points[i,:],
+                method=self.opt,
+                bounds=bnds)
 
-                    opt_para[i,:] = res.x
-                    opt_func[i] = res.fun
+                opt_para[i,:] = res.x
+                opt_func[i] = res.fun
 
-                    # Display optimization progress in real-time
-                    if self.verbose == True:
-                        print('Iteration {}: Likelihood={} \n'
-                        .format(str(i+1), np.min(opt_func[:i+1])))
+                # Display optimization progress in real-time
+                if self.verbose == True:
+                    print('Iteration {}: Likelihood={} \n'
+                    .format(str(i+1), np.min(opt_func[:i+1])))
 
-                # Locate the optimum results
-                self.theta = opt_para[np.argmin(opt_func), :-1]
-                self.tau = opt_para[np.argmin(opt_func), -1]
+            # Locate the optimum results
+            self.theta = opt_para[np.argmin(opt_func), :-1]
+            self.tau = opt_para[np.argmin(opt_func), -1]
 
-                # Update attributes
-                self.Neglikelihood = Neglikelihood_unknown_noise(opt_para[np.argmin(opt_func)])
-
-
-        def predict(self, X_test, trend=None, cov_return=False):
-            """GP model predicting
-
-            Input
-            -----
-            X_test (array): test set, shape (n_samples, n_features)
-            trend: trend values at test sites, shape (n_samples, n_functions)
-            cov_return (bool): return/not return covariance matrix
-
-            Output
-            ------
-            f: GP predictions
-            SSqr: Prediction variances"""
-
-            # Construct correlation matrix between test and train data
-            k = self.Corr(self.X, X_test, 10**self.theta)*(1-self.tau)
-
-            # Mean prediction
-            n = X_test.shape[0]  # Number of training instances
-            dim = X_test.shape[1]  # Problem dimension
-
-            if self.trend == 'Const':
-                f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
-
-            elif self.trend == 'Linear':
-                obs = np.hstack((np.ones((n,1)), X_test))
-                f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
-
-            elif self.trend == 'Quadratic':
-                obs = np.ones((n,1))
-                obs = np.hstack((obs, X_test))
-                for i in range(dim):
-                        obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
-                f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
-
-            else:
-                f = trend @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+            # Update attributes
+            self.Neglikelihood = Neglikelihood_unknown_noise(opt_para[np.argmin(opt_func)])
 
 
-            # Variance prediction
-            SSqr = self.SigmaSqr*((1-self.tau) - np.diag(k.T @ (cho_solve((self.L, True), k))))
+    def predict(self, X_test, trend=None, cov_return=False):
+        """GP model predicting
 
-            # Calculate covariance
-            if cov_return is True:
-                Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)*(1-self.tau)
-                 - k.T @ (cho_solve((self.L, True), k)))
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+        trend: trend values at test sites, shape (n_samples, n_functions)
+        cov_return (bool): return/not return covariance matrix
 
-                # Return values
-                return f.flatten(), SSqr.flatten(), Cov
+        Output
+        ------
+        f: GP predictions
+        SSqr: Prediction variances"""
 
-            else:
-                # Return values
-                return f.flatten(), SSqr.flatten()
+        # Construct correlation matrix between test and train data
+        k = self.Corr(self.X, X_test, 10**self.theta)*(1-self.tau)
+
+        # Mean prediction
+        n = X_test.shape[0]  # Number of training instances
+        dim = X_test.shape[1]  # Problem dimension
+
+        if self.trend == 'Const':
+            f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+        elif self.trend == 'Linear':
+            obs = np.hstack((np.ones((n,1)), X_test))
+            f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+        elif self.trend == 'Quadratic':
+            obs = np.ones((n,1))
+            obs = np.hstack((obs, X_test))
+            for i in range(dim):
+                    obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
+            f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+        else:
+            f = trend @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+
+        # Variance prediction
+        SSqr = self.SigmaSqr*((1-self.tau) - np.diag(k.T @ (cho_solve((self.L, True), k))))
+
+        # Calculate covariance
+        if cov_return is True:
+            Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)*(1-self.tau)
+             - k.T @ (cho_solve((self.L, True), k)))
+
+            # Return values
+            return f.flatten(), SSqr.flatten(), Cov
+
+        else:
+            # Return values
+            return f.flatten(), SSqr.flatten()
