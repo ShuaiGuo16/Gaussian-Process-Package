@@ -76,22 +76,6 @@ class GPRegressor(GaussianProcess):
         return NegLnLike.flatten()
 
 
-        def Neglikelihood_known_noise(self, theta_SSq):
-            """Negative log-likelihood function for known noise
-
-            Input
-            -----
-            theta_SSq (array+float):
-                  --> theta: correlation legnths for different dimensions
-                  --> SSq: process variance
-
-            Output
-            ------
-            NegLnLike: Negative log-likelihood value"""
-
-
-
-
         def fit(self, X, y, noise='auto'):
             """GP model training
 
@@ -110,9 +94,6 @@ class GPRegressor(GaussianProcess):
             lb, ub = -3, 2      # Range for theta
 
             if noise is 'auto'  # For cases when noise term has to be estimated
-
-                # Range for tau
-                lb_tau, ub_tau = 0, 1
 
                 # Generate random starting points (Latin Hypercube)
                 initial_points = lhs(self.X.shape[1]+1, samples=self.n_restarts)
