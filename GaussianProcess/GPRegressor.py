@@ -131,3 +131,58 @@ class GPRegressor(GaussianProcess):
                 # Locate the optimum results
                 self.theta = opt_para[np.argmin(opt_func), :-1]
                 self.tau = opt_para[np.argmin(opt_func), -1]
+
+
+        def predict(self, X_test, trend=None, cov_return=False):
+            """GP model predicting
+
+            Input
+            -----
+            X_test (array): test set, shape (n_samples, n_features)
+            trend: trend values at test sites, shape (n_samples, n_functions)
+            cov_return (bool): return/not return covariance matrix
+
+            Output
+            ------
+            f: GP predictions
+            SSqr: Prediction variances"""
+
+            # Construct correlation matrix between test and train data
+            k = self.Corr(self.X, X_test, 10**self.theta)*(1-self.tau)
+
+            # Mean prediction
+            n = X_test.shape[0]  # Number of training instances
+            dim = X_test.shape[1]  # Problem dimension
+
+            if self.trend == 'Const':
+                f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+            elif self.trend == 'Linear':
+                obs = np.hstack((np.ones((n,1)), X_test))
+                f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+            elif self.trend == 'Quadratic':
+                obs = np.ones((n,1))
+                obs = np.hstack((obs, X_test))
+                for i in range(dim):
+                        obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
+                f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+            else:
+                f = trend @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+
+            # Variance prediction
+            SSqr = self.SigmaSqr*(1 - np.diag(k.T @ (cho_solve((self.L, True), k))))
+
+            # Calculate covariance
+            if cov_return is True:
+                Cov = self.SigmaSqr*(self.Corr(X_test, X_test, 10**self.theta)
+                 - k.T @ (cho_solve((self.L, True), k)))
+
+                # Return values
+                return f.flatten(), SSqr.flatten(), Cov
+
+            else:
+                # Return values
+                return f.flatten(), SSqr.flatten()
