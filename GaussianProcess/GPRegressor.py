@@ -108,8 +108,8 @@ class GPRegressor(GaussianProcess):
                 initial_points = np.vstack((initial_points, self.init_point))
 
             # Create a Bounds instance for optimization
-            lower_bound = np.hstack((lb*np.ones(X.shape[1]), np.zeros(1)))
-            upper_bound = np.hstack((ub*np.ones(X.shape[1]), np.ones(1)))
+            lower_bound = np.hstack((lb*np.ones(self.X.shape[1]), np.zeros(1)))
+            upper_bound = np.hstack((ub*np.ones(self.X.shape[1]), np.ones(1)))
             bnds = Bounds(lower_bound, upper_bound)
 
             # Run local optimizer on all points
