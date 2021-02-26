@@ -5,8 +5,8 @@ Python package, which facilitates scikit-learn style of training and exploiting
 a Gaussian Process model.
 
 ## Training a Gaussian Process interpolator:
- - Various trend type: 'Const', 'Linear', 'Quadratic', 'Custom';
- - Various kernel type: 'Gaussian', 'Matern-3_2', 'Matern-5_2', 'Cubic';
+ - Supported trends: 'Const', 'Linear', 'Quadratic', 'Custom';
+ - Supported kernels: 'Gaussian', 'Matern-3_2', 'Matern-5_2', 'Cubic';
  - Efficient model training: implemented Adjoint method to accelerate
  global optimization;
  - Automatically draw realizations from the posterior distribution of the trained
@@ -17,3 +17,10 @@ a Gaussian Process model.
  - **Active Learning**:
     - 'EPE' --> maximum expected prediction error learning;
     - 'U' --> minimum classification error learning;
+
+## Training a Gaussian Process Regressor:
+ - Supported trends: 'Const', 'Linear', 'Quadratic', 'Custom';
+ - Supported kernels: 'Gaussian', 'Matern-3_2', 'Matern-5_2', 'Cubic';
+ - Automatical estimation of noise variance;
+ - Posterior sampling;
+ - Integration with Scikit-Learn;
