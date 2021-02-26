@@ -190,3 +190,21 @@ class GPRegressor(GaussianProcess):
         else:
             # Return values
             return f.flatten(), SSqr.flatten()
+
+
+    def score(self, X_test, y_test):
+        """Calculate root mean squared error
+
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+        y_test (array): test labels
+
+        Output
+        ------
+        RMSE: the root mean square error"""
+
+        y_pred, SSqr = self.predict(X_test)
+        RMSE = np.sqrt(np.mean((y_pred-y_test.flatten())**2))
+
+        return RMSE
