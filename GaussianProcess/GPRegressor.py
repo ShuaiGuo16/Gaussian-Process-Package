@@ -134,7 +134,7 @@ class GPRegressor(GaussianProcess):
             self.tau = opt_para[np.argmin(opt_func), -1]
 
             # Update attributes
-            self.Neglikelihood = Neglikelihood_unknown_noise(opt_para[np.argmin(opt_func)])
+            self.Neglikelihood = self.Neglikelihood_unknown_noise(opt_para[np.argmin(opt_func)])
 
 
     def predict(self, X_test, trend=None, cov_return=False):
