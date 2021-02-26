@@ -237,3 +237,24 @@ class GPRegressor(GaussianProcess):
         RMSE = np.sqrt(np.mean((y_pred-y_test.flatten())**2))
 
         return RMSE
+
+
+    def realizations(self, N, X_eval):
+        """Draw realizations from posterior distribution of
+        the trained GP metamodeling
+
+        Input:
+        -----
+        N: Number of realizations
+        X_eval: Evaluate coordinates
+
+        Output:
+        -------
+        samples: Generated realizations, shape (N, n_features)"""
+
+        f, SSqr, Cov = self.predict(X_eval, cov_return=True)
+        Cov = (Cov + Cov.T)/2
+
+        samples = np.random.default_rng().multivariate_normal(mean=f, cov=Cov, size=N)
+
+        return samples
