@@ -174,3 +174,44 @@ class GEGP():
 
         # Update attributes
         self.NegLnlike = self.Neglikelihood(self.theta)
+
+    def predict(self, X_test):
+        """GEGP model predicting
+
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+
+        Output
+        ------
+        f: GP predictions
+        SSqr: Prediction variances"""
+
+        n = self.X.shape[0]  # Number of training instances
+        k = self.X.shape[1]  # Problem dimension
+        pred_num = X_test.shape[0]  # Number of predicting samples
+
+        # Construct correlation matrix
+        psi=np.zeros(n+k*n, pred_num)
+
+        for i in range(n):
+
+            # Configure the nominal part
+            X_temp = np.tile(self.X[[i],:], (pred_num, 1))
+            psi_temp = np.exp(-np.sum((X_temp-x)**2*theta, axis=1))
+            psi[i,:] = psi_temp.T
+
+            # Configure the gradient parts
+            Dpsi_temp = (X_test-X_temp)*2 @ np.diag(theta)
+            for j in range(k):
+                psi[(j+1)*n+i,:] = np.transpose(Dpsi_temp[:,j]*psi_temp)
+
+        # Mean prediction
+        f = self.mu + psi.T @ (cho_solve((self.L, True),
+        np.vstack((self.y, self.grad))-self.F@self.mu))
+
+        # Variance prediction
+        SSqr = self.SigmaSqr*(1 - np.sum(k.T * (cho_solve((self.L, True), psi)).T, axis=1))
+
+        # Return values
+        return f.flatten(), SSqr.flatten()
