@@ -122,3 +122,51 @@ class GEGP():
         self.PsiDot, self.F, self.L, self.mu, self.SigmaSqr = PsiDot, F, L, mu, SigmaSqr
 
         return NegLnLike.flatten()
+
+    def fit(self, X, y, grad):
+        """GEGP model training
+
+        Input
+        -----
+        X (array): shape (n_samples, n_features)
+        y (array): shape (n_samples, 1)
+        grad (array): shape(n_samples*n_features, 1)
+        """
+        self.X, self.y, self.grad = X, y, grad
+        lb, ub = -3, 2
+
+        # Generate random starting points (Latin Hypercube)
+        lhd = lhs(self.X.shape[1], samples=self.n_restarts)
+
+        # Scale random samples to the given bounds
+        initial_points = (ub-lb)*lhd + lb
+
+        # Expand initial points if user specified them
+        if self.init_point is not None:
+            initial_points = np.vstack((initial_points, self.init_point))
+
+        # Create A Bounds instance for optimization
+        bnds = Bounds(lb*np.ones(X.shape[1]),ub*np.ones(X.shape[1]))
+
+        # Run local optimizer on all points
+        opt_para = np.zeros((self.n_restarts, self.X.shape[1]))
+        opt_func = np.zeros(self.n_restarts)
+        for i in range(self.n_restarts):
+            res = minimize(self.Neglikelihood,
+            initial_points[i,:],
+            method=self.opt,
+            bounds=bnds)
+
+            opt_para[i,:] = res.x
+            opt_func[i] = res.fun
+
+        # Display optimization progress in real-time
+        if self.verbose == True:
+            print('Iteration {}: Likelihood={} \n'
+            .format(str(i+1), np.min(opt_func[:i+1])))
+
+        # Locate the optimum results
+        self.theta = opt_para[np.argmin(opt_func)]
+
+        # Update attributes
+        self.NegLnlike = self.Neglikelihood(self.theta)
