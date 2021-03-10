@@ -84,7 +84,7 @@ class GEGP():
             Psi[i,:] = np.exp(-np.sum(theta*(self.X[i,:]-self.X)**2, axis=1))
         Psi = Psi + np.eye(n)*self.nugget
         # To avoid duplicate addition
-        PsiDot[1:n-1,1:n-1]=Psi/2;
+        PsiDot[:n,:n]=Psi/2;
 
         # 2-Build dPsidX
         for i in range(k):
