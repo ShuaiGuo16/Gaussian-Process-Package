@@ -190,6 +190,7 @@ class GEGP():
         n = self.X.shape[0]  # Number of training instances
         k = self.X.shape[1]  # Problem dimension
         pred_num = X_test.shape[0]  # Number of predicting samples
+        theta = 10**self.theta  # Correlation length
 
         # Construct correlation matrix
         psi=np.zeros((n+k*n, pred_num))
@@ -198,11 +199,11 @@ class GEGP():
 
             # Configure the nominal part
             X_temp = np.tile(self.X[[i],:], (pred_num, 1))
-            psi_temp = np.exp(-np.sum((X_temp-X_test)**2*self.theta, axis=1))
+            psi_temp = np.exp(-np.sum((X_temp-X_test)**2*theta, axis=1))
             psi[i,:] = psi_temp.T
 
             # Configure the gradient parts
-            Dpsi_temp = (X_test-X_temp)*2 @ np.diag(self.theta)
+            Dpsi_temp = (X_test-X_temp)*2 @ np.diag(theta)
             for j in range(k):
                 psi[(j+1)*n+i,:] = np.transpose(Dpsi_temp[:,j]*psi_temp)
 
