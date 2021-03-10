@@ -30,6 +30,7 @@ class GEGP():
         self.n_restarts = n_restarts
         self.opt = opt
         self.init_point = inital_point
+        self.verbose = verbose
         self.kernel = kernel
         self.trend = trend
         self.nugget = nugget
