@@ -192,7 +192,7 @@ class GEGP():
         pred_num = X_test.shape[0]  # Number of predicting samples
 
         # Construct correlation matrix
-        psi=np.zeros(n+k*n, pred_num)
+        psi=np.zeros((n+k*n, pred_num))
 
         for i in range(n):
 
