@@ -117,3 +117,6 @@ class GEGP():
         # Compute log-likelihood
         LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
         NegLnLike = ((k+1)*n/2)*np.log(SigmaSqr) + 0.5*LnDetK
+
+        # Update attributes
+        self.PsiDot, self.F, self.L, self.mu, self.SigmaSqr = PsiDot, F, L, mu, SigmaSqr
