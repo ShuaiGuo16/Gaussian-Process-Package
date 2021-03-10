@@ -108,7 +108,7 @@ class GEGP():
 
         # Mean estimation
         mu = np.linalg.solve(F.T @ (cho_solve((L, True), F)),
-        F.T @ (cho_solve((L, True), np.vstack((self.y, self.grad))))
+        F.T @ (cho_solve((L, True), np.vstack((self.y, self.grad)))))
 
         # Variance estimation
         SigmaSqr = (np.vstack((self.y, self.grad))-F@mu).T @ \
