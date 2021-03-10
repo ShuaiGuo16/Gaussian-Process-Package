@@ -35,7 +35,7 @@ class GEGP():
         self.nugget = nugget
 
 
-    def Diff(self):
+    def Diff(self, X):
         """Construct the difference matrix for each column of matrix X
 
         Input
@@ -47,11 +47,13 @@ class GEGP():
         diff_list (list): each element is a difference matrix for
         each column of matrix X"""
 
-        self.diff_list = []
+        diff_list = []
 
-        for i in range(self.X.shape[1]):
-            temp = np.tile(self.X[:,[i]], (1, self.X.shape[0]))
-            self.diff_list.append(temp-temp.T)
+        for i in range(X.shape[1]):
+            temp = np.tile(X[:,[i]], (1, X.shape[0]))
+            diff_list.append(temp-temp.T)
+
+        return diff_list
 
 
     def Neglikelihood(self, theta):
@@ -133,6 +135,7 @@ class GEGP():
         grad (array): shape(n_samples*n_features, 1)
         """
         self.X, self.y, self.grad = X, y, grad
+        self.diff_list =
         lb, ub = -3, 2
 
         # Generate random starting points (Latin Hypercube)
