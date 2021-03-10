@@ -135,7 +135,7 @@ class GEGP():
         grad (array): shape(n_samples*n_features, 1)
         """
         self.X, self.y, self.grad = X, y, grad
-        self.diff_list = Diff(self.X)
+        self.diff_list = self.Diff(self.X)
         lb, ub = -3, 2
 
         # Generate random starting points (Latin Hypercube)
