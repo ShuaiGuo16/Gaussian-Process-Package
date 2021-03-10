@@ -35,7 +35,7 @@ class GEGP():
         self.nugget = nugget
 
 
-    def Diff(self, X):
+    def Diff(self):
         """Construct the difference matrix for each column of matrix X
 
         Input
@@ -47,10 +47,73 @@ class GEGP():
         diff_list (list): each element is a difference matrix for
         each column of matrix X"""
 
-        diff_list = []
+        self.diff_list = []
 
-        for i in range(X.shape[1]):
-            temp = np.tile(X[:,[i]], (1, X.shape[0]))
-            diff_list.append(temp-temp.T)
+        for i in range(self.X.shape[1]):
+            temp = np.tile(self.X[:,[i]], (1, self.X.shape[0]))
+            self.diff_list.append(temp-temp.T)
 
-        return diff_list
+
+    def Neglikelihood(self, theta):
+        """Negative log-likelihood function
+
+        Input
+        -----
+        theta (array): correlation legnths for different dimensions
+
+        Output
+        ------
+        NegLnLike: Negative log-likelihood value"""
+
+        theta = 10**theta    # Correlation length
+        n = self.X.shape[0]  # Number of training instances
+        k = self.X.shape[1]  # Number of dimensions
+
+        if self.trend == 'Const':
+            F = np.hstack((np.ones((n,1)), np.zeros((n*k,1))))
+        else:
+            print('Other trends are currently not available, switch to "Const" instead')
+            F = np.vstack((np.ones((n,1)), np.zeros((n*k,1))))
+
+        # Construct correlation matrix
+        PsiDot = np.zeros(((k+1)*n, (k+1)*n))
+
+        # 1-Build normal Psi matrix
+        Psi = np.zeros((n,n))
+        for i in range(n):
+            Psi[i,:] = np.exp(-np.sum(theta*(self.X[i,:]-self.X)**2, axis=1))
+        Psi = Psi + np.eye(n)*self.nugget
+        # To avoid duplicate addition
+        PsiDot[1:n-1,1:n-1]=Psi/2;
+
+        # 2-Build dPsidX
+        for i in range(k):
+            PsiDot[:n, (i+1)*n:(i+2)*n] = 2*theta[i]*self.diff_list[i]*Psi
+
+        # 3-Build d2PsidX2
+        for i in range(k):
+            # To avoid duplicate addition
+            PsiDot[(i+1)*n:(i+2)*n, (i+1)*n:(i+2)*n] = \
+            (2*theta[i]-4*theta[i]**2*self.diff_list[i]**2)*Psi/2
+
+        # 4-Build d2PsidXdX
+        for i in range(k-1):
+            for j in range(i+1, k):
+                PsiDot[(i+1)*n:(i+2)*n, (j+1)*n:(j+2)*n] = \
+                -4*theta[i]*theta[j]*self.diff_list[i]*self.diff_list[j]*Psi
+
+        # 5-Compile PsiDot
+        PsiDot = PsiDot+PsiDot.T
+        L = np.linalg.cholesky(PsiDot)
+
+        # Mean estimation
+        mu = np.linalg.solve(F.T @ (cho_solve((L, True), F)),
+        F.T @ (cho_solve((L, True), np.vstack((self.y, self,grad))))
+
+        # Variance estimation
+        SigmaSqr = (np.vstack((self.y, self,grad))-F@mu).T @ \
+        (cho_solve((L, True), np.vstack((self.y, self,grad))-F@mu)) / ((k+1)*n)
+
+        # Compute log-likelihood
+        LnDetK = 2*np.sum(np.log(np.abs(np.diag(L))))
+        NegLnLike = ((k+1)*n/2)*np.log(SigmaSqr) + 0.5*LnDetK
