@@ -120,3 +120,5 @@ class GEGP():
 
         # Update attributes
         self.PsiDot, self.F, self.L, self.mu, self.SigmaSqr = PsiDot, F, L, mu, SigmaSqr
+
+        return NegLnLike.flatten()
