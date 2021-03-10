@@ -211,7 +211,8 @@ class GEGP():
         np.vstack((self.y, self.grad))-self.F@self.mu))
 
         # Variance prediction
-        SSqr = self.SigmaSqr*(1 - np.sum(k.T * (cho_solve((self.L, True), psi)).T, axis=1))
+        SSqr = self.SigmaSqr*(1 - np.sum(k.T * np.transpose(cho_solve((self.L, True), psi)),
+        axis=1))
 
         # Return values
         return f.flatten(), SSqr.flatten()
