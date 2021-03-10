@@ -72,7 +72,7 @@ class GEGP():
         k = self.X.shape[1]  # Number of dimensions
 
         if self.trend == 'Const':
-            F = np.hstack((np.ones((n,1)), np.zeros((n*k,1))))
+            F = np.vstack((np.ones((n,1)), np.zeros((n*k,1))))
         else:
             print('Other trends are currently not available, switch to "Const" instead')
             F = np.vstack((np.ones((n,1)), np.zeros((n*k,1))))
