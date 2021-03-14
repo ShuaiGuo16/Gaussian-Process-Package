@@ -205,7 +205,7 @@ class GEGP():
             # Configure the gradient parts
             Dpsi_temp = (X_test-X_temp)*2 @ np.diag(theta)
             for j in range(k):
-                psi[(j+1)*n+i,:] = np.transpose(Dpsi_temp[:,j]*psi_temp)
+                psi[(j+1)*n+i,:] = np.transpose(Dpsi_temp[:,[j]]*psi_temp)
 
         # Mean prediction
         f = self.mu + psi.T @ (cho_solve((self.L, True),
