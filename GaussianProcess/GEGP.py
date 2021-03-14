@@ -217,3 +217,49 @@ class GEGP():
 
         # Return values
         return f.flatten(), SSqr.flatten()
+
+    def predict_grad(self, X_test):
+        """GEGP model predicting gradients
+
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+
+        Output
+        ------
+        grad: Gradient predictions"""
+
+        sample_num = X_test.shape[0]  # Number of predicting samples
+        problem_dim = X_test.shape[1]  # Problem dimension
+        theta = 10**self.theta  # Correlation length
+
+        # Calculate the constant part of the gradients
+        gradConst = cho_solve((self.L, True),
+        np.vstack((self.y, self.grad))-self.F@self.mu)
+
+        # Calculate the full gradients
+        grad = np.zeros((sample_num,problem_dim))
+
+        for n in range(sample_num):
+            X_test_temp = np.tile(X_test[[i],:], (self.X.shape[0], 1))
+            r = np.exp(-np.sum((self.X-X_test_temp)**2*theta, axis=1))
+
+            # Calculate the first-order terms
+            R_D_1st = np.zeros((self.X.shape[0], problem_dim))
+            for i in range(problem_dim):
+                R_D_1st[:,i] = 2*theta[i]*r*(self.X[:,[i]]-X_test[n,i])
+
+            # Calculate the second-order terms
+            for i in range(problem_dim):
+                R_D_2nd = np.zeros((self.X.shape[0], problem_dim))
+                for k in range(problem_dim):
+                    if k == i:
+                        R_D_2nd[:,k] = R_D_1st[:,[k]]*(-2*theta[k])*(self.X[:,[k]]-
+                        X_test[n,k]) + 2*theta[k]*r
+                    else:
+                        R_D_2nd[:,k] = -2*theta[k]*(self.X[:,[k]]-
+                        X_test[n,k])*R_D_1st[:,[i]]
+
+                # Calculate gradient matrix
+                grad[n,i] = np.vstack((R_D_1st[:,[i]],
+                R_D_2nd.reshape((-1,1), order='F'))).T @ gradConst
