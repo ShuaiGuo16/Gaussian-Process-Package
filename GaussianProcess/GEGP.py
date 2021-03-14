@@ -263,3 +263,5 @@ class GEGP():
                 # Calculate gradient matrix
                 grad[n,i] = np.vstack((R_D_1st[:,[i]],
                 R_D_2nd.reshape((-1,1), order='F'))).T @ gradConst
+
+        return grad
