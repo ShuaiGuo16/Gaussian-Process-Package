@@ -247,17 +247,17 @@ class GEGP():
             # Calculate the first-order terms
             R_D_1st = np.zeros((self.X.shape[0], problem_dim))
             for i in range(problem_dim):
-                R_D_1st[:,i] = 2*theta[i]*r*(self.X[:,[i]]-X_test[n,i])
+                R_D_1st[:,[i]] = 2*theta[i]*r*(self.X[:,[i]]-X_test[n,i])
 
             # Calculate the second-order terms
             for i in range(problem_dim):
                 R_D_2nd = np.zeros((self.X.shape[0], problem_dim))
                 for k in range(problem_dim):
                     if k == i:
-                        R_D_2nd[:,k] = R_D_1st[:,[k]]*(-2*theta[k])*(self.X[:,[k]]-
+                        R_D_2nd[:,[k]] = R_D_1st[:,[k]]*(-2*theta[k])*(self.X[:,[k]]-
                         X_test[n,k]) + 2*theta[k]*r
                     else:
-                        R_D_2nd[:,k] = -2*theta[k]*(self.X[:,[k]]-
+                        R_D_2nd[:,[k]] = -2*theta[k]*(self.X[:,[k]]-
                         X_test[n,k])*R_D_1st[:,[i]]
 
                 # Calculate gradient matrix
