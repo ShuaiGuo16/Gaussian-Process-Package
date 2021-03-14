@@ -199,7 +199,7 @@ class GEGP():
 
             # Configure the nominal part
             X_temp = np.tile(self.X[[i],:], (pred_num, 1))
-            psi_temp = np.exp(-np.sum((X_temp-X_test)**2*theta, axis=1))
+            psi_temp = np.exp(-np.sum((X_temp-X_test)**2*theta, axis=1, keepdims=True))
             psi[i,:] = psi_temp.T
 
             # Configure the gradient parts
