@@ -241,7 +241,7 @@ class GEGP():
         grad = np.zeros((sample_num,problem_dim))
 
         for n in range(sample_num):
-            X_test_temp = np.tile(X_test[[i],:], (self.X.shape[0], 1))
+            X_test_temp = np.tile(X_test[[n],:], (self.X.shape[0], 1))
             r = np.exp(-np.sum((self.X-X_test_temp)**2*theta, axis=1))
 
             # Calculate the first-order terms
