@@ -217,3 +217,16 @@ class GEGP():
 
         # Return values
         return f.flatten(), SSqr.flatten()
+
+    def predict_grad(self, X_test):
+        """GEGP model predicting gradients
+
+        Input
+        -----
+        X_test (array): test set, shape (n_samples, n_features)
+
+        Output
+        ------
+        f: Gradient predictions"""
+
+        
