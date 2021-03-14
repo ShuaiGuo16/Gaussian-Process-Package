@@ -164,10 +164,10 @@ class GEGP():
             opt_para[i,:] = res.x
             opt_func[i] = res.fun
 
-        # Display optimization progress in real-time
-        if self.verbose == True:
-            print('Iteration {}: Likelihood={} \n'
-            .format(str(i+1), np.min(opt_func[:i+1])))
+            # Display optimization progress in real-time
+            if self.verbose == True:
+                print('Iteration {}: Likelihood={} \n'
+                .format(str(i+1), np.min(opt_func[:i+1])))
 
         # Locate the optimum results
         self.theta = opt_para[np.argmin(opt_func)]
