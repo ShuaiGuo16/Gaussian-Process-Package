@@ -199,7 +199,7 @@ class GEGP():
 
             # Configure the nominal part
             X_temp = np.tile(self.X[[i],:], (pred_num, 1))
-            psi_temp = np.exp(-np.sum((X_temp-X_test)**2*theta, axis=1))
+            psi_temp = np.exp(-np.sum((X_temp-X_test)**2*theta, axis=1, keepdims=True))
             psi[i,:] = psi_temp.T
 
             # Configure the gradient parts
@@ -242,7 +242,7 @@ class GEGP():
 
         for n in range(sample_num):
             X_test_temp = np.tile(X_test[[n],:], (self.X.shape[0], 1))
-            r = np.exp(-np.sum((self.X-X_test_temp)**2*theta, axis=1))
+            r = np.exp(-np.sum((self.X-X_test_temp)**2*theta, axis=1, keepdims=True))
 
             # Calculate the first-order terms
             R_D_1st = np.zeros((self.X.shape[0], problem_dim))
