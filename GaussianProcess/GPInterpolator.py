@@ -245,7 +245,7 @@ class GPInterpolator(GaussianProcess):
         ------
         RMSE: the root mean square error"""
 
-        y_pred, SSqr = self.predict(X_test)
+        y_pred, SSqr = self.predict(X_test, trend)
         RMSE = np.sqrt(np.mean((y_pred-y_test.flatten())**2))
 
         return RMSE
