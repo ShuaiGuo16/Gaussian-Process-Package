@@ -232,13 +232,14 @@ class GPInterpolator(GaussianProcess):
         'inital_point': self.init_point, 'verbose': self.verbose,
         'kernel': self.kernel, 'trend': self.trend, 'nugget': self.nugget}
 
-    def score(self, X_test, y_test):
+    def score(self, X_test, y_test, trend=None):
         """Calculate root mean squared error
 
         Input
         -----
         X_test (array): test set, shape (n_samples, n_features)
         y_test (array): test labels
+        trend: trend values at test sites, shape (n_samples, n_functions)
 
         Output
         ------
