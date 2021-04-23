@@ -97,7 +97,7 @@ class GPRegressor(GaussianProcess):
         if isinstance(noise, str):
             if noise == 'auto':
                 self.noise = noise
-            eles:
+            else:
                 print('Other noise types are currently not available, GPRegressor will estimate a homogeneous noise instead')
                 self.noise = 'auto'
         else:
