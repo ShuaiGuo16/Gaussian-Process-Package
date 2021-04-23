@@ -38,20 +38,21 @@ class GPRegressor(GaussianProcess):
         tau = theta_tau[-1]           # Variance ratio
         n = self.X.shape[0]  # Number of training instances
 
-        if self.trend == 'Const':
-            F = np.ones((n,1))
-        elif self.trend == 'Linear':
-            F = np.hstack((np.ones((n,1)), self.X))
-        elif self.trend == 'Quadratic':
-            # Problem dimensionality
-            dim = self.X.shape[1]
-            # Initialize F matrix
-            F = np.ones((n,1))
-            # Fill in linear part
-            F = np.hstack((F, self.X))
-            # Fill in quadratic part
-            for i in range(dim):
-                    F = np.hstack((F, self.X[:, [i]]*self.X[:,i:]))
+        if isinstance(self.trend, str):
+            if self.trend == 'Const':
+                F = np.ones((n,1))
+            elif self.trend == 'Linear':
+                F = np.hstack((np.ones((n,1)), self.X))
+            elif self.trend == 'Quadratic':
+                # Problem dimensionality
+                dim = self.X.shape[1]
+                # Initialize F matrix
+                F = np.ones((n,1))
+                # Fill in linear part
+                F = np.hstack((F, self.X))
+                # Fill in quadratic part
+                for i in range(dim):
+                        F = np.hstack((F, self.X[:, [i]]*self.X[:,i:]))
         else:
             F = self.trend
 
@@ -158,19 +159,21 @@ class GPRegressor(GaussianProcess):
         n = X_test.shape[0]  # Number of training instances
         dim = X_test.shape[1]  # Problem dimension
 
-        if self.trend == 'Const':
-            f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+        if isinstance(self.trend, str):
 
-        elif self.trend == 'Linear':
-            obs = np.hstack((np.ones((n,1)), X_test))
-            f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+            if self.trend == 'Const':
+                f = self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
 
-        elif self.trend == 'Quadratic':
-            obs = np.ones((n,1))
-            obs = np.hstack((obs, X_test))
-            for i in range(dim):
-                    obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
-            f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+            elif self.trend == 'Linear':
+                obs = np.hstack((np.ones((n,1)), X_test))
+                f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
+
+            elif self.trend == 'Quadratic':
+                obs = np.ones((n,1))
+                obs = np.hstack((obs, X_test))
+                for i in range(dim):
+                        obs = np.hstack((obs, X_test[:, [i]]*X_test[:,i:]))
+                f = obs @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
 
         else:
             f = trend @ self.mu + k.T @ (cho_solve((self.L, True), self.y-self.F@self.mu))
