@@ -88,11 +88,22 @@ class GPRegressor(GaussianProcess):
                               --> 'auto': unknown homogeneous noise,
                                           estimated by GPRegressor
                               --> array: known homogeneous/heterogeneous noise
+                              (not implemented yet)
         """
 
         self.X, self.y = X, y
-        self.noise = noise
         lb, ub = -3, 2      # Range for theta
+
+        if isinstance(noise, str):
+            if noise == 'auto':
+                self.noise = noise
+            eles:
+                print('Other noise types are currently not available, GPRegressor will estimate a homogeneous noise instead')
+                self.noise = 'auto'
+        else:
+            print('Other noise types are currently not available, GPRegressor will estimate a homogeneous noise instead')
+            self.noise = 'auto'
+
 
         if self.noise == 'auto':
         # For cases when noise term has to be estimated
