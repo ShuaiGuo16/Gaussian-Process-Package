@@ -218,6 +218,42 @@ class GEGP():
         # Return values
         return f.flatten(), SSqr.flatten()
 
+    def predict_only(self, X_train, y_train, grad_train, theta, X_test):
+        """Predict-only mode, with given theta value
+
+        Input:
+        -----
+        X_train (array): shape (n_samples, n_features)
+        y_train (array): shape (n_samples, 1)
+        grad (array): shape(n_samples*n_features, 1)
+        theta (array): correlation legnths for different dimensions
+        X_test (array): test set, shape (n_samples, n_features)
+
+        Output
+        ------
+        f: GEGP predictions
+        SSqr: Prediction variances
+        grad: Gradient predictions"""
+
+        # Assign training data
+        self.X, self.y, self.grad = X_train, y_train, grad_train
+        self.diff_list = self.Diff(self.X)
+
+        # Assign theta value
+        self.theta = theta
+
+        # Update relevant attributes
+        self.NegLnlike = self.Neglikelihood(self.theta)
+
+        # Nominal value predictions
+        f, SSqr = self.predict(X_test)
+
+        # Gradient predictions
+        grad = self.predict_grad(X_test)
+
+        return f, SSqr, grad
+        
+
     def predict_grad(self, X_test):
         """GEGP model predicting gradients
 
